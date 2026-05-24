@@ -1684,7 +1684,7 @@
   var presentationSlides = [];
   var CANVA_URL = 'https://canva.link/30fdrbjhp5ge904';
   /** 선생님: Apps Script 웹 앱 URL로 교체 (또는 Streamlit Secrets google_submit_url) */
-  var GOOGLE_SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbyzPPoMxi18c750Wx9-EoXl9eryUtmnNlhrIanqwMnf2HzYOLiAoyOp-2vzQ_leBodgNw/exec';
+  var GOOGLE_SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbzCS5Hdod0HNkDC4UWLN9glCu2FlvndpfQm-c94ozfWGgaiIYy2wrfSW1UGJCJJfMRufQ/exec';
 
   var DS_KNOWLEDGE = {
     '배열': {
@@ -1774,16 +1774,23 @@
     return prompt;
   }
 
+  function truncSubmitStr(s, max) {
+    s = s || '';
+    if (s.length <= max) return s;
+    return s.slice(0, max) + '\n…(아래 ' + (s.length - max) + '자는 Drive JSON에만 전체 저장)';
+  }
+
   function collectSubmissionPayload() {
     var masterEl = document.getElementById('masterPrompt');
     return {
+      pageType: 'dbproject_helpdesk',
       teamName: document.getElementById('teamName').value.trim(),
       topicTitle: document.getElementById('topicTitle').value.trim(),
       problemDesc: document.getElementById('problemDesc').value.trim(),
       dataDesc: document.getElementById('dataDesc').value.trim(),
       dsList: getSelectedDS(),
-      aiResponse: document.getElementById('aiResponse').value.trim(),
-      masterPrompt: masterEl ? masterEl.innerText.trim() : '',
+      aiResponse: truncSubmitStr(document.getElementById('aiResponse').value.trim(), 15000),
+      masterPrompt: truncSubmitStr(masterEl ? masterEl.innerText.trim() : '', 5000),
       scenarioData: scenarioData,
       visualData: visualData,
       simStepsData: simStepsData,
@@ -1791,6 +1798,54 @@
       submittedAt: new Date().toISOString(),
       pageUrl: window.location.href
     };
+  }
+
+  var _submitWait = null;
+
+  function installGoogleSubmitListener() {
+    if (window._submitListenerInstalled) return;
+    window._submitListenerInstalled = true;
+    window.addEventListener('message', function (ev) {
+      if (!ev.data || typeof ev.data.submitOk === 'undefined') return;
+      if (!_submitWait) return;
+      var cb = _submitWait;
+      _submitWait = null;
+      clearTimeout(cb.timer);
+      if (ev.data.submitOk) cb.onOk(ev.data);
+      else cb.onFail(ev.data);
+    });
+  }
+
+  function postPayloadToGoogle(payload, callbacks) {
+    installGoogleSubmitListener();
+    if (_submitWait) {
+      alert('이전 제출이 처리 중이에요. 잠시만 기다려 주세요.');
+      return;
+    }
+    var timer = setTimeout(function () {
+      if (_submitWait) {
+        _submitWait = null;
+        if (callbacks.onTimeout) callbacks.onTimeout();
+      }
+    }, 20000);
+    _submitWait = { onOk: callbacks.onOk, onFail: callbacks.onFail, timer: timer };
+
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = GOOGLE_SUBMIT_URL;
+    form.target = 'googleSubmitFrame';
+    form.acceptCharset = 'UTF-8';
+    form.style.display = 'none';
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(function () {
+      if (form.parentNode) form.parentNode.removeChild(form);
+    }, 2000);
   }
 
   function isSubmitUrlConfigured() {
@@ -1823,42 +1878,38 @@
     if (statusEl) statusEl.textContent = '저장 요청을 보내는 중이에요…';
 
     var payload = collectSubmissionPayload();
-    var jsonStr = JSON.stringify(payload);
 
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = GOOGLE_SUBMIT_URL;
-    form.target = 'googleSubmitFrame';
-    form.acceptCharset = 'UTF-8';
-    form.style.display = 'none';
-
-    var input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = jsonStr;
-    form.appendChild(input);
-
-    document.body.appendChild(form);
-    form.submit();
-
-    setTimeout(function () {
-      if (form.parentNode) form.parentNode.removeChild(form);
-    }, 3000);
-
-    if (btn) {
-      btn.textContent = '제출 완료 ✓';
-      setTimeout(function () {
-        btn.disabled = false;
-        btn.textContent = '선생님께 제출하기';
-      }, 4000);
-    }
-    if (statusEl) {
-      statusEl.textContent = '전송했어요. 1~2분 뒤 선생님 시트 「제출」 탭을 확인해 주세요.';
-    }
-    alert(
-      '제출 요청을 보냈어요!\n팀: ' + team + '\n주제: ' + topic
-      + '\n\n시트에 안 보이면 선생님께 「웹 앱 액세스: 모든 사용자」 설정을 확인해 달라고 해 주세요.'
-    );
+    postPayloadToGoogle(payload, {
+      onOk: function () {
+        if (btn) {
+          btn.textContent = '제출 완료 ✓';
+          setTimeout(function () {
+            btn.disabled = false;
+            btn.textContent = '선생님께 제출하기';
+          }, 4000);
+        }
+        if (statusEl) {
+          statusEl.textContent = '제출 완료! 시트 「제출_통합」·Drive 확인';
+          statusEl.style.color = '#166534';
+        }
+        alert('제출 완료!\n팀: ' + team + '\n주제: ' + topic + '\n\n시트 탭: 제출_통합');
+      },
+      onFail: function (res) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '선생님께 제출하기';
+        }
+        if (statusEl) statusEl.textContent = '';
+        alert('저장 실패: ' + (res.error || '알 수 없음') + '\n선생님께 Apps Script 재배포를 요청해 주세요.');
+      },
+      onTimeout: function () {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '선생님께 제출하기';
+        }
+        alert('응답이 없어요. 시트 「제출_통합」「수신로그」를 선생님이 확인해 주세요.');
+      }
+    });
   }
 
   function copyText(id) {
@@ -2603,6 +2654,7 @@
   }
 
   function boot() {
+    installGoogleSubmitListener();
     buildMasterPrompt();
     initAccordion();
     patchAccordionResize();
