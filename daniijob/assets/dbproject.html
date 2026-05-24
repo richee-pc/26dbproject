@@ -2411,6 +2411,8 @@
         var isOpen = panel.classList.contains('is-open');
         setPanelOpen(panel, !isOpen);
         syncNavActive();
+        setTimeout(notifyFrameHeight, 80);
+        setTimeout(notifyFrameHeight, 450);
       });
     });
 
@@ -2440,13 +2442,39 @@
     window.openAccordionPanel = expandPanel;
   }
 
+  function notifyFrameHeight() {
+    try {
+      var h = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      );
+      window.parent.postMessage({ type: 'streamlit:setFrameHeight', height: h + 32 }, '*');
+    } catch (e) {}
+  }
+
+  var _origExpand = null;
+  function patchAccordionResize() {
+    if (typeof window.openAccordionPanel === 'function' && !_origExpand) {
+      _origExpand = window.openAccordionPanel;
+      window.openAccordionPanel = function (id, scroll) {
+        _origExpand(id, scroll);
+        setTimeout(notifyFrameHeight, 120);
+        setTimeout(notifyFrameHeight, 500);
+      };
+    }
+  }
+
   function boot() {
     buildMasterPrompt();
     initAccordion();
+    patchAccordionResize();
     updateDsCount();
     document.querySelectorAll('#dsChecks input').forEach(function (cb) {
       cb.addEventListener('change', updateDsCount);
     });
+    notifyFrameHeight();
+    setTimeout(notifyFrameHeight, 300);
+    setTimeout(notifyFrameHeight, 1200);
   }
 
   if (document.readyState === 'loading') {
@@ -2454,7 +2482,6 @@
   } else {
     boot();
   }
-})();
 </script>
 </body>
 </html>
