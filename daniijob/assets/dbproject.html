@@ -2440,14 +2440,21 @@
     window.openAccordionPanel = expandPanel;
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
+  function boot() {
     buildMasterPrompt();
     initAccordion();
     updateDsCount();
     document.querySelectorAll('#dsChecks input').forEach(function (cb) {
       cb.addEventListener('change', updateDsCount);
     });
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
 </script>
 </body>
 </html>
