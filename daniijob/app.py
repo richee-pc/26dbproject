@@ -67,7 +67,8 @@ def load_html() -> str:
 
 
 def render_html(html: str) -> None:
-    components.html(html, height=720, scrolling=True)
+    # 초기 높이는 넉넉히 — HTML 안에서 setFrameHeight로 자동 조절
+    components.html(html, height=1600, scrolling=True)
 
 
 def main() -> None:
