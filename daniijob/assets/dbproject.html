@@ -1802,17 +1802,28 @@
 
   var _submitWait = null;
 
+  function parseGoogleSubmitMessage(ev) {
+    var data = ev.data;
+    if (!data) return null;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch (e) { return null; }
+    }
+    if (data.type === 'googleSubmit' || typeof data.submitOk !== 'undefined') return data;
+    return null;
+  }
+
   function installGoogleSubmitListener() {
     if (window._submitListenerInstalled) return;
     window._submitListenerInstalled = true;
     window.addEventListener('message', function (ev) {
-      if (!ev.data || typeof ev.data.submitOk === 'undefined') return;
+      var data = parseGoogleSubmitMessage(ev);
+      if (!data || typeof data.submitOk === 'undefined') return;
       if (!_submitWait) return;
       var cb = _submitWait;
       _submitWait = null;
       clearTimeout(cb.timer);
-      if (ev.data.submitOk) cb.onOk(ev.data);
-      else cb.onFail(ev.data);
+      if (data.submitOk) cb.onOk(data);
+      else cb.onFail(data);
     });
   }
 
@@ -1820,14 +1831,19 @@
     installGoogleSubmitListener();
     if (_submitWait) {
       alert('이전 제출이 처리 중이에요. 잠시만 기다려 주세요.');
-      return;
+      return false;
+    }
+    var json = JSON.stringify(payload);
+    if (json.length > 480000) {
+      alert('제출 데이터가 너무 커요. AI 응답을 줄이거나 시뮬레이션을 추출한 뒤 다시 제출해 주세요.');
+      return false;
     }
     var timer = setTimeout(function () {
       if (_submitWait) {
         _submitWait = null;
         if (callbacks.onTimeout) callbacks.onTimeout();
       }
-    }, 20000);
+    }, 45000);
     _submitWait = { onOk: callbacks.onOk, onFail: callbacks.onFail, timer: timer };
 
     var form = document.createElement('form');
@@ -1836,16 +1852,16 @@
     form.target = 'googleSubmitFrame';
     form.acceptCharset = 'UTF-8';
     form.style.display = 'none';
-    var input = document.createElement('input');
-    input.type = 'hidden';
+    var input = document.createElement('textarea');
     input.name = 'payload';
-    input.value = JSON.stringify(payload);
+    input.value = json;
     form.appendChild(input);
     document.body.appendChild(form);
     form.submit();
     setTimeout(function () {
       if (form.parentNode) form.parentNode.removeChild(form);
-    }, 2000);
+    }, 3000);
+    return true;
   }
 
   function isSubmitUrlConfigured() {
@@ -1875,11 +1891,10 @@
       btn.disabled = true;
       btn.textContent = '제출 중…';
     }
-    if (statusEl) statusEl.textContent = '저장 요청을 보내는 중이에요…';
+    if (statusEl) statusEl.textContent = '저장 요청을 보내는 중… (최대 45초)';
 
     var payload = collectSubmissionPayload();
-
-    postPayloadToGoogle(payload, {
+    if (!postPayloadToGoogle(payload, {
       onOk: function () {
         if (btn) {
           btn.textContent = '제출 완료 ✓';
@@ -1907,9 +1922,19 @@
           btn.disabled = false;
           btn.textContent = '선생님께 제출하기';
         }
-        alert('응답이 없어요. 시트 「제출_통합」「수신로그」를 선생님이 확인해 주세요.');
+        if (statusEl) {
+          statusEl.textContent = '응답 확인이 늦었어요. 시트에 저장됐는지 확인해 주세요.';
+          statusEl.style.color = '#b45309';
+        }
+        alert('응답 확인이 늦어졌어요.\n저장은 이미 됐을 수 있어요 — 시트 「제출_통합」의 「상세내용」열·Drive JSON을 확인해 주세요.\n같은 메시지가 반복되면 선생님께 Apps Script 새 버전 배포를 요청해 주세요.');
       }
-    });
+    })) {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '선생님께 제출하기';
+      }
+      if (statusEl) statusEl.textContent = '';
+    }
   }
 
   function copyText(id) {
