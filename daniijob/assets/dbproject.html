@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자료구조 구현 팀 프로젝트 | 수행평가 안내 &amp; 헬프데스크</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sky: #38bdf8;
+      --sky-light: #7dd3fc;
+      --sky-dark: #0284c7;
+      --lime: #a3e635;
+      --lime-light: #d9f99d;
+      --mint: #6ee7b7;
+      --mint-dark: #059669;
+      --primary: #0ea5e9;
+      --primary-light: #7dd3fc;
+      --primary-dark: #0369a1;
+      --accent: #84cc16;
+      --accent-soft: #ecfccb;
+      --success: #22c55e;
+      --bg: #f0fdfa;
+      --bg-alt: #f7fee7;
+      --surface: #ffffff;
+      --text: #1e3a2f;
+      --text-muted: #5f7a6e;
+      --border: #bbf7d0;
+      --border-sky: #bae6fd;
+      --shadow: 0 6px 28px rgba(14, 165, 233, 0.1);
+      --shadow-soft: 0 4px 16px rgba(163, 230, 53, 0.12);
+      --radius: 20px;
+      --radius-sm: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Gowun Dodum', -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+    .hero {
+      background: var(--sky);
+      color: #fff;
+      padding: 4rem 1.5rem 5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.35;
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(255,255,255,0.5) 0%, transparent 8%),
+        radial-gradient(circle at 85% 30%, rgba(255,255,255,0.4) 0%, transparent 6%),
+        radial-gradient(circle at 70% 80%, rgba(255,255,255,0.35) 0%, transparent 10%),
+        radial-gradient(circle at 25% 75%, rgba(255,255,255,0.3) 0%, transparent 7%);
+    }
+    .hero::after {
+      content: '🌿 ☁️ 🍃';
+      position: absolute;
+      bottom: 1rem;
+      left: 0;
+      right: 0;
+      font-size: 1.1rem;
+      letter-spacing: 1.5rem;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .hero-content { position: relative; max-width: 720px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.35);
+      padding: 0.4rem 1.1rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      border: 2px solid rgba(255,255,255,0.5);
+      box-shadow: 0 2px 12px rgba(255,255,255,0.25);
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 1rem;
+    }
+    .hero > .hero-content > p {
+      font-size: 1.05rem;
+      opacity: 0.92;
+      max-width: 560px;
+      margin: 0 auto 2rem;
+    }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+    .hero-tag {
+      background: rgba(255,255,255,0.28);
+      border: 2px solid rgba(255,255,255,0.45);
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 2px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      box-shadow: 0 2px 16px rgba(110, 231, 183, 0.15);
+    }
+    .nav-hint {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.2rem;
+      justify-content: center;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    nav a:hover { color: var(--sky-dark); }
+    nav a:active { color: var(--accent); }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+    section.accordion-panel { padding: 0; border-bottom: 2px solid var(--border); }
+    section.accordion-panel.alt { background: rgba(255,255,255,0.5); }
+    section.accordion-panel.is-open { background: rgba(255,255,255,0.85); }
+    .accordion-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .accordion-trigger:hover { background: rgba(125, 211, 252, 0.12); }
+    .accordion-panel.is-open .accordion-trigger {
+      background: #e0f2fe;
+      border-bottom: 2px dashed var(--border-sky);
+    }
+    .accordion-head { flex: 1; min-width: 0; }
+    .accordion-head h2 {
+      font-size: clamp(1.2rem, 3.5vw, 1.55rem);
+      font-weight: 800;
+      margin: 0.35rem 0 0.25rem;
+      color: var(--text);
+    }
+    .accordion-teaser {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .accordion-panel.is-open .accordion-teaser { white-space: normal; }
+    .accordion-icon {
+      flex-shrink: 0;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      background: #e0f2fe;
+      border: 2px solid var(--border-sky);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--sky-dark);
+      transition: transform 0.3s ease;
+    }
+    .accordion-panel.is-open .accordion-icon { transform: rotate(180deg); }
+    .accordion-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.45s ease;
+    }
+    .accordion-panel.is-open .accordion-body { grid-template-rows: 1fr; }
+    .accordion-body-inner {
+      overflow: hidden;
+      padding: 0 0 2.5rem;
+    }
+    .accordion-body-inner > .container { padding-top: 0.5rem; }
+    nav a.is-active {
+      color: var(--sky-dark) !important;
+      background: #ecfccb;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      border: 2px solid var(--sky-light);
+    }
+    .section-header { margin-bottom: 2.5rem; }
+    .section-label {
+      display: inline-block;
+      color: var(--sky-dark);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+      background: var(--accent-soft);
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--lime-light);
+    }
+    .section-header h2 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 800;
+      margin-bottom: 0.6rem;
+    }
+    .section-header p { color: var(--text-muted); }
+    .card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      box-shadow: var(--shadow-soft);
+    }
+    section.alt .card { background: #fefffe; border-color: var(--border-sky); }
+    .highlight-box {
+      background: #ecfccb;
+      border: 2px solid var(--lime-light);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.8rem;
+      margin-top: 1.5rem;
+    }
+    .highlight-box p { color: var(--primary-dark); font-weight: 500; }
+    .goal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
+      margin-top: 2rem;
+    }
+    .goal-item {
+      background: #ffffff;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.4rem;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .goal-item:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-soft);
+      border-color: var(--sky-light);
+    }
+    .goal-grid .goal-item:nth-child(2) { background: #ecfeff; }
+    .goal-grid .goal-item:nth-child(4) { background: #f7fee7; }
+    .goal-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+    .goal-item h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .goal-item p { font-size: 0.88rem; color: var(--text-muted); }
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.55rem;
+      top: 0.5rem;
+      bottom: 0.5rem;
+      width: 3px;
+      background: var(--sky);
+      border-radius: 999px;
+    }
+    .timeline-item { position: relative; margin-bottom: 2rem; padding-left: 1.5rem; }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-dot {
+      position: absolute;
+      left: -1.65rem;
+      top: 0.35rem;
+      width: 1.1rem;
+      height: 1.1rem;
+      background: var(--primary);
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    .timeline-item:nth-child(2) .timeline-dot { background: var(--lime); box-shadow: 0 0 0 3px var(--lime-light); }
+    .timeline-item:nth-child(3) .timeline-dot { background: var(--sky); box-shadow: 0 0 0 3px var(--sky-light); }
+    .timeline-item:nth-child(4) .timeline-dot { background: var(--mint-dark); box-shadow: 0 0 0 3px var(--mint); }
+    .timeline-header { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .timeline-badge {
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      background: var(--primary);
+    }
+    .timeline-item:nth-child(2) .timeline-badge { background: var(--lime); color: #365314; }
+    .timeline-item:nth-child(3) .timeline-badge { background: var(--sky-dark); }
+    .timeline-item:nth-child(4) .timeline-badge { background: var(--mint-dark); }
+    .timeline-date { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; }
+    .timeline-item h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .timeline-item > p { font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+    .checklist { list-style: none; }
+    .checklist li {
+      font-size: 0.88rem;
+      padding: 0.3rem 0 0.3rem 1.4rem;
+      position: relative;
+    }
+    .checklist li::before {
+      content: '✿';
+      position: absolute;
+      left: 0;
+      color: var(--lime);
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+    .rubric-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .rubric-stat {
+      background: #e0f2fe;
+      border: 2px solid var(--border-sky);
+      border-radius: var(--radius-sm);
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .rubric-stat .num { font-size: 1.8rem; font-weight: 800; color: var(--sky-dark); }
+    .rubric-stat .lbl { font-size: 0.82rem; color: var(--text-muted); }
+    .table-wrap { overflow-x: auto; margin-top: 1rem; border-radius: 12px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead { background: var(--sky-dark); color: #fff; }
+    th { padding: 0.9rem 1rem; text-align: left; font-weight: 700; }
+    td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) { background: #f0fdf9; }
+    .score-badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--primary-dark);
+      font-weight: 700;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      border: 1px solid var(--lime-light);
+    }
+    a { color: var(--sky-dark); }
+    a:hover { color: var(--mint-dark); }
+    .genai-panel-inner { background: #f7fee7; }
+    .present-panel-inner { background: #ecfeff; }
+    .genai-intro {
+      background: var(--surface);
+      border: 2px solid var(--lime-light);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-soft);
+    }
+    .genai-intro h3 { font-size: 1.2rem; color: var(--primary-dark); margin-bottom: 1rem; }
+    .genai-uses {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .genai-use { background: #f0fdf9; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem 1.2rem; }
+    .genai-use .icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .genai-use h4 { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .genai-use p { font-size: 0.82rem; color: var(--text-muted); }
+    .prompt-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1.2rem;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .prompt-header {
+      background: var(--sky-dark);
+      color: #fff;
+      padding: 0.9rem 1.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .prompt-header h4 { font-size: 0.95rem; font-weight: 700; }
+    .copy-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff;
+      padding: 0.35rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .copy-btn.copied { background: var(--success); border-color: var(--success); }
+    .prompt-body {
+      padding: 1.2rem 1.4rem;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.84rem;
+      line-height: 1.8;
+      color: #334155;
+      background: #f0fdf9;
+      white-space: pre-wrap;
+    }
+    .ethics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .ethics-do { background: #ecfdf5; border: 2px solid var(--mint); border-radius: var(--radius-sm); padding: 1.2rem 1.4rem; }
+    .ethics-dont { background: #fef2f2; border: 2px solid #fecaca; border-radius: var(--radius-sm); padding: 1.2rem 1.4rem; }
+    .ethics-do h4 { color: var(--mint-dark); font-size: 0.95rem; margin-bottom: 0.6rem; }
+    .ethics-dont h4 { color: #e11d48; font-size: 0.95rem; margin-bottom: 0.6rem; }
+    .ethics-item ul { padding-left: 1.2rem; font-size: 0.88rem; color: var(--text-muted); }
+    .ethics-item li { margin-bottom: 0.3rem; }
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin-top: 1.5rem;
+    }
+    .resource-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.3rem 1.5rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+    }
+    .resource-btn:hover {
+      border-color: var(--sky-light);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(56, 189, 248, 0.2);
+    }
+    .resource-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--sky);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .resource-info h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .resource-info p { font-size: 0.8rem; color: var(--text-muted); }
+    .resource-dl {
+      margin-left: auto;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    footer {
+      background: var(--sky-dark);
+      color: #ccfbf1;
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      font-size: 0.85rem;
+    }
+    footer strong { color: #fff; }
+    .present-tips { margin-top: 1.5rem; }
+    .present-tips li { margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.92rem; }
+    .perfect-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .perfect-card {
+      border-radius: 12px;
+      padding: 1.2rem;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .perfect-card .pts { font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; }
+    .perfect-card h4 { font-size: 0.92rem; margin-bottom: 0.5rem; }
+    .perfect-card p { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .perfect-card .ai-tip {
+      font-size: 0.8rem;
+      background: #ecfccb;
+      padding: 0.5rem 0.65rem;
+      border-radius: 999px;
+      color: var(--primary-dark);
+      border: 1px solid var(--border);
+    }
+    .perfect-card {
+      border: 2px solid var(--border-sky) !important;
+      background: #ffffff !important;
+    }
+    .master-prompt-wrap {
+      border: 2px solid var(--sky-light);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 1.5rem 0;
+      box-shadow: var(--shadow);
+    }
+    .master-prompt-head {
+      background: var(--sky-dark);
+      color: #fff;
+      padding: 1rem 1.4rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .master-prompt-head h3 { font-size: 1rem; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .btn {
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-light { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.35); }
+    .btn-light:hover { background: rgba(255,255,255,0.3); }
+    .btn-primary { background: var(--sky-dark); color: #fff; box-shadow: 0 3px 12px rgba(14, 165, 233, 0.2); }
+    .btn-accent { background: var(--accent); color: #fff; box-shadow: 0 3px 12px rgba(132, 204, 22, 0.2); }
+    .btn-primary:hover, .btn-accent:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .sim-lab {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      margin-top: 0.5rem;
+      box-shadow: var(--shadow-soft);
+    }
+    .sim-lab h3 { font-size: 1.15rem; margin-bottom: 0.5rem; color: var(--primary-dark); }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin: 1.2rem 0;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      color: var(--text);
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: inherit;
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+    .ds-select-field {
+      margin-top: 0.5rem;
+      padding: 1.1rem 1.2rem;
+      background: #f0fdf9;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .ds-select-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .ds-select-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .ds-select-hint { font-size: 0.78rem; color: var(--text-muted); }
+    .ds-select-count {
+      margin-left: auto;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--sky-dark);
+      background: #fff;
+      border: 2px solid var(--sky-light);
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+    }
+    .ds-chip-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.65rem;
+    }
+    .ds-chip {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      min-height: 88px;
+      padding: 0.75rem 0.5rem;
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .ds-chip:hover {
+      border-color: var(--sky-light);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.15);
+      transform: translateY(-2px);
+    }
+    .ds-chip input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+    .ds-chip-icon { font-size: 1.5rem; line-height: 1; }
+    .ds-chip-name { font-size: 0.88rem; font-weight: 700; color: var(--text); text-align: center; }
+    .ds-chip-tag {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.3;
+    }
+    .ds-chip-mark {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.4rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: #fff;
+      font-size: 0.65rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: transparent;
+      transition: all 0.2s;
+    }
+    .ds-chip:has(input:checked) {
+      border-color: var(--sky-dark);
+      background: #e0f2fe;
+      box-shadow: 0 4px 16px rgba(14, 165, 233, 0.2);
+    }
+    .ds-chip:has(input:checked) .ds-chip-mark {
+      background: var(--mint-dark);
+      border-color: var(--mint-dark);
+      color: #fff;
+    }
+    .ds-chip:has(input:checked) .ds-chip-name { color: var(--primary-dark); }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.45);
+    }
+    .sim-output {
+      margin-top: 1.5rem;
+      display: none;
+    }
+    .sim-output.visible { display: block; }
+    .sim-phase-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin: 1.8rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px dashed var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .sim-phase-title:first-child { margin-top: 1rem; }
+    .sim-phase-badge {
+      font-size: 0.7rem;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .scenario-panel {
+      background: #fefce8;
+      border: 2px solid var(--lime-light);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 0.5rem;
+      box-shadow: var(--shadow-soft);
+    }
+    .scenario-panel .scenario-summary {
+      font-size: 0.95rem;
+      color: #365314;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+    .scenario-panel .scenario-story {
+      font-size: 0.88rem;
+      color: #3f6212;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.75);
+      border-radius: var(--radius-sm);
+      border: 1px dashed var(--lime);
+    }
+    .virtual-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .virtual-data-table th {
+      background: var(--sky-dark);
+      color: #fff;
+      padding: 0.65rem 1rem;
+      text-align: left;
+      font-weight: 700;
+    }
+    .virtual-data-table td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #d9f99d;
+      color: var(--text);
+    }
+    .virtual-data-table tr:last-child td { border-bottom: none; }
+    .virtual-data-table td.val {
+      font-family: Consolas, Monaco, monospace;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+    .sim-section { transition: opacity 0.4s; }
+    .sim-section.dim { opacity: 0.35; pointer-events: none; }
+    .sim-section.hidden-block { display: none; }
+    .visual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .visual-card {
+      background: #0e7490;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 2px solid var(--border-sky);
+      box-shadow: var(--shadow-soft);
+    }
+    .visual-card h4 {
+      background: rgba(255,255,255,0.15);
+      color: #ecfdf5;
+      font-size: 0.85rem;
+      padding: 0.6rem 1rem;
+      margin: 0;
+    }
+    .visual-card pre {
+      margin: 0;
+      padding: 1rem;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: #bbf7d0;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .ds-explain-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .ds-explain-card {
+      background: #ecfeff;
+      border: 2px solid var(--border-sky);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.2rem;
+    }
+    .ds-explain-card h4 { color: var(--primary-dark); font-size: 0.95rem; margin-bottom: 0.5rem; }
+    .ds-explain-card dl { font-size: 0.82rem; }
+    .ds-explain-card dt { font-weight: 700; color: var(--text); margin-top: 0.4rem; }
+    .ds-explain-card dd { color: var(--text-muted); margin-left: 0; }
+    .sim-steps { position: relative; }
+    .sim-step {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #f0fdf9;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--border);
+      border-left: 5px solid var(--lime);
+    }
+    .sim-step-num {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+    .sim-step-body h5 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .sim-step-body .state {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.8rem;
+      background: #0e7490;
+      color: #ecfdf5;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      margin: 0.4rem 0;
+    }
+    .sim-step-body p { font-size: 0.85rem; color: var(--text-muted); }
+    .sim-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+      align-items: center;
+    }
+    .sim-progress {
+      flex: 1;
+      min-width: 120px;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .sim-progress-bar {
+      height: 100%;
+      background: var(--sky);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .resource-btn.external .resource-dl { background: var(--sky-dark); }
+    .resource-btn.form-link .resource-dl { background: var(--mint-dark); }
+    .resource-btn.survey .resource-dl { background: var(--accent); color: #1e3a2f; }
+    .notice-box {
+      background: #fefce8;
+      border: 2px solid var(--lime-light);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.2rem;
+      font-size: 0.88rem;
+      color: #365314;
+      margin-bottom: 1.5rem;
+    }
+    .notice-box a { color: var(--sky-dark); font-weight: 700; }
+    .present-hero {
+      background: var(--sky-dark);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem 1.8rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .present-hero h3 { font-size: 1.15rem; margin-bottom: 0.35rem; }
+    .present-hero p { font-size: 0.88rem; opacity: 0.92; }
+    .present-flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      align-items: center;
+    }
+    .present-flow span {
+      background: #fff;
+      border: 2px solid var(--border);
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+    }
+    .present-flow .arrow { border: none; background: none; padding: 0; color: var(--primary); }
+    .slide-deck { display: flex; flex-direction: column; gap: 1rem; }
+    .slide-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .slide-card-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem 1.3rem;
+      background: #ecfeff;
+      border-bottom: 2px solid var(--border);
+    }
+    .slide-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2rem;
+      height: 2rem;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      margin-right: 0.6rem;
+    }
+    .slide-card-header h4 { font-size: 1rem; flex: 1; }
+    .slide-card-header .slide-sub { font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-top: 0.2rem; }
+    .slide-card-body { padding: 1.2rem 1.3rem; }
+    .slide-bullets { list-style: none; margin: 0; padding: 0; }
+    .slide-bullets li {
+      position: relative;
+      padding: 0.35rem 0 0.35rem 1.2rem;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+    .slide-bullets li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .slide-speaker {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: #ecfccb;
+      border-radius: var(--radius-sm);
+      border-left: 4px solid var(--lime);
+      font-size: 0.84rem;
+      color: #166534;
+    }
+    .slide-speaker strong { display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: var(--mint-dark); }
+    .slide-canva-tip {
+      margin-top: 0.6rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .present-empty {
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      color: var(--text-muted);
+      background: #fff;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+    }
+    .present-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+    }
+    .btn-canva {
+      background: var(--sky-dark);
+      color: #fff;
+      text-decoration: none;
+      padding: 0.55rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .present-copy-all {
+      background: var(--sky-dark);
+      color: #fff;
+      border: none;
+      padding: 0.55rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .hero { padding: 3rem 1rem 4rem; }
+      section { padding: 3rem 0; }
+      th, td { padding: 0.7rem 0.6rem; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-content">
+    <span class="hero-badge">2026학년도 · 3학년 1학기 · 정보(자료구조)</span>
+    <h1>자료구조 구현<br>팀 프로젝트 안내</h1>
+    <p>4차시 동안 팀과 함께 실생활 문제를 자료구조로 해결하고, 구현과 발표까지 완성해 보세요. AI는 여러분의 학습 파트너예요!</p>
+    <div class="hero-tags">
+      <span class="hero-tag">모둠 수행평가</span>
+      <span class="hero-tag">반영 비율 35%</span>
+      <span class="hero-tag">6월 실시</span>
+      <span class="hero-tag">GenAI 활용 권장</span>
+    </div>
+  </div>
+</header>
+
+<nav id="mainNav">
+  <p class="nav-hint">메뉴를 누르면 펼쳐지고, 직접 접기 전까지 계속 열려 있어요 · 여러 섹션을 동시에 열 수 있어요</p>
+  <ul>
+    <li><a href="#overview" data-panel="overview">개요</a></li>
+    <li><a href="#schedule" data-panel="schedule">4차시 로드맵</a></li>
+    <li><a href="#rubric" data-panel="rubric">평가 기준</a></li>
+    <li><a href="#genai" data-panel="genai">GenAI 가이드</a></li>
+    <li><a href="#simlab" data-panel="simlab">시뮬레이션 랩</a></li>
+    <li><a href="#present" data-panel="present">Canva 발표</a></li>
+    <li><a href="#resources" data-panel="resources">링크·제출</a></li>
+  </ul>
+</nav>
+
+<main id="accordionMain">
+<section id="overview" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-overview">
+    <div class="accordion-head">
+      <span class="section-label">Overview</span>
+      <h2>프로젝트 개요</h2>
+      <p class="accordion-teaser">배운 자료구조를 실생활에 연결해 보는, 정보 과목의 핵심 수행평가예요.</p>
+    </div>
+    <span class="accordion-icon" aria-hidden="true">▼</span>
+  </button>
+  <div class="accordion-body" id="body-overview" role="region" aria-label="프로젝트 개요">
+    <div class="accordion-body-inner">
+  <div class="container">
+    <div class="card">
+      <p style="font-size:1.05rem; margin-bottom:1rem;">
+        안녕하세요! 이번 <strong>자료구조 구현 팀 프로젝트</strong>는 수업에서 배운 선형·비선형 자료구조(배열, 연결 리스트, 스택, 큐, 트리, 그래프 등)를 활용하여 <strong>실생활 문제를 직접 해결</strong>하는 과제예요.
+      </p>
+      <p style="color:var(--text-muted); margin-bottom:1rem;">
+        최종 목표는 두 가지예요. 첫째, 팀원과 협력하여 <strong>프로그램 소스코드를 구현</strong>하고, 둘째, 그 과정과 결과를 <strong>발표</strong>로 공유하는 것이에요. 완벽한 코드가 아니어도 괜찮아요 — <em style="color:var(--primary); font-style:normal; font-weight:600;">왜 이 자료구조를 선택했는지, 어떻게 동작하는지</em>를 이해하고 설명할 수 있다면 충분히 훌륭한 결과물이에요.
+      </p>
+      <p style="color:var(--text-muted);">
+        이번 프로젝트에서는 <strong>제미나이(Gemini) 등 생성형 AI</strong>를 학습 도구로 적극 활용해도 좋아요. AI로 개념을 빠르게 이해하고, 막힌 부분의 힌트를 얻고, 발표 자료를 다듬는 등 <strong>학습 부담을 줄이면서도 스스로 이해한 내용</strong>을 담아내는 것이 핵심이에요.
+      </p>
+      <div class="highlight-box">
+        <p>교육과정 성취기준: 자료구조[02-01]~[03-02] · 평가 방식: 모둠 수행 · 만점 100점(과목 성적의 35% 반영)</p>
+      </div>
+      <div class="goal-grid">
+        <div class="goal-item">
+          <div class="goal-icon">🔍</div>
+          <h3>탐구</h3>
+          <p>실생활 문제를 찾고 적합한 자료구조를 분석해요</p>
+        </div>
+        <div class="goal-item">
+          <div class="goal-icon">💻</div>
+          <h3>구현</h3>
+          <p>C언어 등으로 자료구조를 직접 코딩해요</p>
+        </div>
+        <div class="goal-item">
+          <div class="goal-icon">📝</div>
+          <h3>보고</h3>
+          <p>프로젝트 수행 과정을 보고서로 정리해요</p>
+        </div>
+        <div class="goal-item">
+          <div class="goal-icon">🎤</div>
+          <h3>발표</h3>
+          <p>팀 발표로 해결 과정과 결과를 공유해요</p>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</section>
+
+<section id="schedule" class="accordion-panel alt">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-schedule">
+    <div class="accordion-head">
+      <span class="section-label">Schedule</span>
+      <h2>4차시 로드맵</h2>
+      <p class="accordion-teaser">15~16주차(6월) 팀 프로젝트 단계별 일정</p>
+    </div>
+    <span class="accordion-icon" aria-hidden="true">▼</span>
+  </button>
+  <div class="accordion-body" id="body-schedule" role="region" aria-label="4차시 로드맵">
+    <div class="accordion-body-inner">
+  <div class="container">
+    <div class="card">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-header">
+            <span class="timeline-badge">1차시</span>
+            <span class="timeline-date">15주차 · 팀 구성 &amp; 주제 탐구</span>
+          </div>
+          <h3>실생활 문제 발견과 자료구조 매칭</h3>
+          <p>팀을 꾸리고, 주변에서 자료구조로 해결할 수 있는 문제를 함께 찾아봐요.</p>
+          <ul class="checklist">
+            <li>팀원 역할 분담(기획·구현·발표·기록)</li>
+            <li>실생활 활용 사례 2~3개 이상 조사</li>
+            <li>활용할 자료구조 종류·정의·특징 정리</li>
+            <li>해결 아이디어 초안 및 탐구 노트 작성</li>
+          </ul>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-header">
+            <span class="timeline-badge">2차시</span>
+            <span class="timeline-date">15주차 · 설계 &amp; 구현(1)</span>
+          </div>
+          <h3>알고리즘 설계와 핵심 기능 구현</h3>
+          <p>선택한 자료구조의 연산(삽입·삭제·탐색 등)을 단계별로 설계하고 코딩을 시작해요.</p>
+          <ul class="checklist">
+            <li>자료구조별 동작 순서도·의사코드 작성</li>
+            <li>배열·연결 리스트·스택·큐·트리·그래프 중 핵심 구조 구현</li>
+            <li>막히는 부분은 AI에게 <strong>힌트만</strong> 요청하며 스스로 해결</li>
+            <li>중간 실행 결과 캡처 및 팀 공유</li>
+          </ul>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-header">
+            <span class="timeline-badge">3차시</span>
+            <span class="timeline-date">16주차 · 구현 완료 &amp; 보고서</span>
+          </div>
+          <h3>프로그램 완성과 프로젝트 보고서</h3>
+          <p>구현을 마무리하고, 수행 과정을 보고서(포트폴리오)로 정리해요.</p>
+          <ul class="checklist">
+            <li>전체 기능 통합·오류 수정·테스트</li>
+            <li>연산 과정을 단계별로 설명(예시 코드·도식 포함)</li>
+            <li>프로젝트 보고서 작성 및 제출</li>
+            <li>팀원별 기여 내용·AI 활용 기록 정리</li>
+          </ul>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-header">
+            <span class="timeline-badge">4차시</span>
+            <span class="timeline-date">16주차 · 발표</span>
+          </div>
+          <h3>팀 발표 및 Q&amp;A</h3>
+          <p>자료구조를 이용한 문제 해결 과정과 결과를 친구들 앞에서 발표해요.</p>
+          <ul class="checklist">
+            <li>발표 자료(PPT 등) 최종 점검</li>
+            <li>주제 소개 → 자료구조 선택 이유 → 구현 시연 → 결론</li>
+            <li>전문 용어를 정확히 사용하며 논리적으로 설명</li>
+            <li>질의응답 준비 및 팀 태도·참여도 점검</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</section>
+
+<section id="rubric" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-rubric">
+    <div class="accordion-head">
+      <span class="section-label">Rubric</span>
+      <h2>핵심 평가 기준</h2>
+      <p class="accordion-teaser">자료구조 구현 프로젝트 만점 100점 · 세부 채점 기준</p>
+    </div>
+    <span class="accordion-icon" aria-hidden="true">▼</span>
+  </button>
+  <div class="accordion-body" id="body-rubric" role="region" aria-label="핵심 평가 기준">
+    <div class="accordion-body-inner">
+  <div class="container">
+    <div class="card" style="margin-bottom:1.5rem; border-color:var(--lime-light); background:#f7fee7;">
+      <h3 style="font-size:1rem; margin-bottom:0.75rem; color:var(--primary-dark);">최상(만점) 수행 수준 — 네 가지를 모두 충족해야 해요</h3>
+      <ul style="font-size:0.88rem; color:var(--text-muted); padding-left:1.2rem;">
+        <li style="margin-bottom:0.5rem;"><strong>탐구 40점:</strong> 실생활 예와 자료구조를 상세히 연결, 3개 이상 구조로 해결책 고안, 종류·정의·특징·시간복잡도 완전 설명</li>
+        <li style="margin-bottom:0.5rem;"><strong>구현 40점:</strong> 창의적 주제·데이터 수집, 최적화 구현, 모든 연산을 단계별·시각 자료·예시 코드로 명확히 표현</li>
+        <li style="margin-bottom:0.5rem;"><strong>표현 10점:</strong> 체계적 구성, 논리적 흐름, 전문용어 정확 사용</li>
+        <li><strong>태도 10점:</strong> 적극적 의견·정보 공유, 맡은 역할 성실 수행 → <a href="#genai">GenAI 통합 가이드</a>·<a href="#simlab">시뮬레이션 랩</a> 활용 권장</li>
+      </ul>
+    </div>
+    <div class="rubric-summary">
+      <div class="rubric-stat"><div class="num">100</div><div class="lbl">만점</div></div>
+      <div class="rubric-stat"><div class="num">35%</div><div class="lbl">과목 반영 비율</div></div>
+      <div class="rubric-stat"><div class="num">4</div><div class="lbl">평가 영역</div></div>
+      <div class="rubric-stat"><div class="num">A/B 80</div><div class="lbl">분할 점수</div></div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h3 style="margin-bottom:1rem; font-size:1.05rem;">평가 영역별 배점</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>평가 영역</th><th>배점</th><th>핵심 질문</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>주제 분석 및 탐구</strong></td>
+              <td><span class="score-badge">40점</span></td>
+              <td>실생활 문제와 자료구조를 얼마나 깊이 연결했나요?</td>
+            </tr>
+            <tr>
+              <td><strong>실제 구현(프로그래밍)</strong></td>
+              <td><span class="score-badge">40점</span></td>
+              <td>자료구조를 코드로 구현하고 연산 과정을 설명할 수 있나요?</td>
+            </tr>
+            <tr>
+              <td><strong>탐구 표현 및 공유</strong></td>
+              <td><span class="score-badge">10점</span></td>
+              <td>발표·보고서가 논리적이고 전문 용어를 잘 썼나요?</td>
+            </tr>
+            <tr>
+              <td><strong>태도 및 참여도</strong></td>
+              <td><span class="score-badge">10점</span></td>
+              <td>팀 활동에 성실히 참여하고 역할을 다했나요?</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h3 style="margin-bottom:1rem; font-size:1.05rem;">① 주제 분석 및 탐구 (40점)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>수행 수준</th><th>점수</th><th>채점 기준 요약</th></tr></thead>
+          <tbody>
+            <tr><td>최상</td><td><span class="score-badge">40점</span></td><td>3개 이상 자료구조 활용, 실생활·특징·시간복잡도까지 완전히 설명</td></tr>
+            <tr><td>상</td><td><span class="score-badge">30점</span></td><td>2~3개 자료구조, 주요 개념과 특징을 정확히 설명</td></tr>
+            <tr><td>중</td><td><span class="score-badge">20점</span></td><td>2개 자료구조, 기본 개념과 특징을 올바르게 설명</td></tr>
+            <tr><td>하</td><td><span class="score-badge">10점</span></td><td>1~2개 자료구조, 기초 개념을 간단히 제시</td></tr>
+            <tr><td>최하</td><td><span class="score-badge">5점</span></td><td>기본적인 시도 수준</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h3 style="margin-bottom:1rem; font-size:1.05rem;">② 실제 구현·프로그래밍 (40점)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>수행 수준</th><th>점수</th><th>채점 기준 요약</th></tr></thead>
+          <tbody>
+            <tr><td>최상</td><td><span class="score-badge">40점</span></td><td>최적화된 구현, 모든 연산을 단계별·시각 자료·예시 코드로 명확히 표현</td></tr>
+            <tr><td>상</td><td><span class="score-badge">30점</span></td><td>올바른 구현, 주요 연산을 논리적 순서로 설명·예시 포함</td></tr>
+            <tr><td>중</td><td><span class="score-badge">20점</span></td><td>기본 구현 완료, 연산 과정을 부분적으로 설명</td></tr>
+            <tr><td>하</td><td><span class="score-badge">10점</span></td><td>구현 시도, 연산 설명을 부분적으로 제시</td></tr>
+            <tr><td>최하</td><td><span class="score-badge">5점</span></td><td>기초적인 시도와 설명 노력</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:1rem; font-size:1.05rem;">③④ 탐구 표현·태도 (각 10점)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>영역</th><th>만점 기준 (10점)</th><th>중간 (7점)</th><th>기초 (4점)</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>탐구 표현 및 공유</strong></td>
+              <td>체계적 구성, 논리적 흐름, 전문용어 정확</td>
+              <td>기본 구성·주제 관련 서술</td>
+              <td>기초 내용 시도</td>
+            </tr>
+            <tr>
+              <td><strong>태도 및 참여도</strong></td>
+              <td>적극적 의견·정보 공유, 역할 성실 수행</td>
+              <td>어느 정도 역할 수행</td>
+              <td>최소한의 참여</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="highlight-box" style="margin-top:1.5rem;">
+        <p>발표는 <a href="#present">Canva 발표 패키지</a>에서 시뮬레이션 결과를 슬라이드별로 자동 정리해요. 흐름: 팀 소개 → 문제·가상 데이터 → 자료구조 3종 → 시뮬레이션 → 구현·결론 → Q&amp;A</p>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</section>
+
+<section id="genai" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-genai">
+    <div class="accordion-head">
+      <span class="section-label">GenAI Guide</span>
+      <h2>만점을 위한 GenAI 통합 활용 가이드</h2>
+      <p class="accordion-teaser">통합 프롬프트 · 윤리 가이드 · AI 활용 조사 연계</p>
+    </div>
+    <span class="accordion-icon" aria-hidden="true">▼</span>
+  </button>
+  <div class="accordion-body" id="body-genai" role="region" aria-label="GenAI 가이드">
+    <div class="accordion-body-inner genai-panel-inner">
+  <div class="container">
+
+    <div class="notice-box">
+      <strong>진행 중 필수 제출:</strong> 프로젝트 기간 동안 AI를 <em>현명하게</em> 썼는지 조사하는
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSciUUPF42FPec4xFW7qcH1bF_Zm92VOI6i1PMC0u0KGXK7Aew/viewform?usp=publish-editor" target="_blank" rel="noopener">AI 활용 조사 폼</a>을 꼭 작성해 주세요.
+      수행평가 종료 후에는 <a href="https://docs.google.com/forms/d/e/1FAIpQLSdMRSBfv1S_5Ne0xNcma2v-4VLqul-IQmixCbYk9QEcq6CK6g/viewform?usp=publish-editor" target="_blank" rel="noopener">태도·참여도 동료평가</a>도 진행해요.
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:0.5rem; font-size:1.05rem;">만점(100점) 체크리스트 ↔ AI 활용 매핑</h3>
+      <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:0.5rem;">각 영역의 <strong>최상 수준 문장</strong>을 달성하려면 아래 과정을 AI와 함께 진행하세요.</p>
+      <div class="perfect-grid">
+        <div class="perfect-card">
+          <div class="pts">주제 분석 및 탐구 · 40점</div>
+          <h4>실생활 ↔ 자료구조 3개+</h4>
+          <p>다양한 실생활 활용 예를 자료구조 특성과 상세히 연결하고, 3개 이상 자료구조로 해결책을 고안하며 정의·특징·시간복잡도를 완전히 설명</p>
+          <div class="ai-tip">AI 활용: 주제 브레인스토밍 → 구조 3종 비교표 → Big-O 정리</div>
+        </div>
+        <div class="perfect-card">
+          <div class="pts">실제 구현 · 40점</div>
+          <h4>최적화 구현 + 연산 설명</h4>
+          <p>창의적 주제·데이터 수집, 최적화된 자료구조로 완전 구현, 모든 연산을 단계별·시각 자료·예시 코드로 명확히 표현</p>
+          <div class="ai-tip">AI 활용: 데이터 설계 → 의사코드·뼈대 → 연산별 시뮬레이션 단계</div>
+        </div>
+        <div class="perfect-card">
+          <div class="pts">탐구 표현 및 공유 · 10점</div>
+          <h4>체계적 발표</h4>
+          <p>논리적 흐름이 명확하고 전문용어를 정확히 사용</p>
+          <div class="ai-tip">AI 활용: 발표 목차·슬라이드 문장·용어 검토 (Canva 양식 연계)</div>
+        </div>
+        <div class="perfect-card">
+          <div class="pts">태도 및 참여도 · 10점</div>
+          <h4>적극적 팀 활동</h4>
+          <p>의견·정보 공유, 맡은 역할 성실 수행</p>
+          <div class="ai-tip">AI 활용: 역할 분담표·회의록 요약 → 종료 후 동료평가</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="master-prompt-wrap">
+      <div class="master-prompt-head">
+        <h3>⭐ 통합 만점 프롬프트 (Gemini에 한 번에 붙여넣기)</h3>
+        <div class="btn-row">
+          <button type="button" class="btn btn-light" onclick="buildMasterPrompt()">입력값 반영·갱신</button>
+          <button type="button" class="btn btn-light" onclick="copyText('masterPrompt')">복사하기</button>
+          <a class="btn btn-light" href="https://gemini.google.com/" target="_blank" rel="noopener" style="text-decoration:none;">Gemini 열기</a>
+        </div>
+      </div>
+      <div class="prompt-body" id="masterPrompt" style="max-height:420px; overflow-y:auto;">아래 「시뮬레이션 랩」에 팀 주제를 입력한 뒤 「입력값 반영·갱신」을 누르면 맞춤 통합 프롬프트가 생성됩니다.</div>
+    </div>
+
+    <p style="font-size:0.88rem; color:var(--text-muted); margin:1rem 0;">
+      <strong>사용 순서:</strong> ① <a href="#simlab">시뮬레이션 랩</a> 입력 → ② Gemini 통합 프롬프트 → ③ 시뮬레이션 추출 → ④ <a href="#present">Canva 발표 슬라이드 초안</a> → ⑤ 팀 검토·구현 → ⑥ <a href="https://docs.google.com/forms/d/e/1FAIpQLSciUUPF42FPec4xFW7qcH1bF_Zm92VOI6i1PMC0u0KGXK7Aew/viewform?usp=publish-editor" target="_blank" rel="noopener">AI 활용 조사 폼</a>
+    </p>
+
+    <div class="card" style="margin-top:2rem;">
+      <h3 style="margin-bottom:1rem; color:var(--primary-dark);">윤리적 AI 사용 가이드라인</h3>
+      <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:1rem;">
+        AI는 <strong>만점 과정을 함께 설계하는 조교</strong>예요. 최종 제출물은 반드시 팀이 이해하고 직접 다듬은 결과여야 해요.
+      </p>
+      <div class="ethics-grid">
+        <div class="ethics-item ethics-do">
+          <h4>이렇게 활용해요 (O)</h4>
+          <ul>
+            <li>통합 프롬프트로 <strong>탐구→구현→시뮬레이션→발표</strong> 초안을 받고 팀이 검토</li>
+            <li>예시 코드는 <strong>뼈대·주석</strong>만 참고하고 직접 실행·수정</li>
+            <li>시뮬레이션 단계를 보며 연산 과정을 <strong>본인 말로</strong> 설명</li>
+            <li>AI 활용 조사 폼에 <strong>질문·이해한 점</strong>을 솔직히 기록</li>
+          </ul>
+        </div>
+        <div class="ethics-item ethics-dont">
+          <h4>이건 피해요 (X)</h4>
+          <ul>
+            <li>AI 출력을 <strong>그대로</strong> 보고서·코드·발표에 제출</li>
+            <li>3개 자료구조·시간복잡도를 <strong>암기하지 못한 채</strong> 발표</li>
+            <li>조사 폼·동료평가 <strong>미제출</strong> 또는 허위 작성</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</section>
+
+<section id="simlab" class="accordion-panel alt">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-simlab">
+    <div class="accordion-head">
+      <span class="section-label">Simulation Lab</span>
+      <h2>자료구조 문제 해결 시뮬레이션 랩</h2>
+      <p class="accordion-teaser">가상 데이터 → 자료구조 → 시각 자료 → 연산 시뮬레이션</p>
+    </div>
+    <span class="accordion-icon" aria-hidden="true">▼</span>
+  </button>
+  <div class="accordion-body" id="body-simlab" role="region" aria-label="시뮬레이션 랩">
+    <div class="accordion-body-inner">
+  <div class="container">
+    <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:1rem;">AI 답변을 붙여넣으면 <strong>① 가상 데이터·상황</strong> → <strong>② 자료구조 설명</strong> → <strong>③ 시각 자료</strong> → <strong>④ 연산 시뮬레이션</strong> 순으로 보여줘요.</p>
+
+    <div class="sim-lab">
+      <h3>1단계 · 프로젝트 정보 입력</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="teamName">팀 이름</label>
+          <input type="text" id="teamName" placeholder="예: 3-1 A팀">
+        </div>
+        <div class="form-group">
+          <label for="topicTitle">프로젝트 주제 (창의적 제목)</label>
+          <input type="text" id="topicTitle" placeholder="예: 학교 급식 대기열 최적화">
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label for="problemDesc">실생활 문제 설명</label>
+          <textarea id="problemDesc" placeholder="어떤 문제를 왜 해결하려는지 구체적으로 적어 주세요."></textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label for="dataDesc">수집·활용할 데이터</label>
+          <textarea id="dataDesc" placeholder="예: 시간대별 대기 인원, 메뉴 종류, 창구 수 등"></textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <div class="ds-select-field">
+            <div class="ds-select-header">
+              <span class="ds-select-title">활용할 자료구조</span>
+              <span class="ds-select-hint">탭해서 선택 · 3개 이상 권장</span>
+              <span class="ds-select-count" id="dsCount">3개 선택</span>
+            </div>
+            <div class="ds-chip-grid" id="dsChecks">
+              <label class="ds-chip">
+                <input type="checkbox" value="배열" checked>
+                <span class="ds-chip-mark" aria-hidden="true">✓</span>
+                <span class="ds-chip-icon">📊</span>
+                <span class="ds-chip-name">배열</span>
+                <span class="ds-chip-tag">순차 저장·인덱스</span>
+              </label>
+              <label class="ds-chip">
+                <input type="checkbox" value="연결 리스트">
+                <span class="ds-chip-mark" aria-hidden="true">✓</span>
+                <span class="ds-chip-icon">🔗</span>
+                <span class="ds-chip-name">연결 리스트</span>
+                <span class="ds-chip-tag">노드·포인터</span>
+              </label>
+              <label class="ds-chip">
+                <input type="checkbox" value="스택" checked>
+                <span class="ds-chip-mark" aria-hidden="true">✓</span>
+                <span class="ds-chip-icon">📚</span>
+                <span class="ds-chip-name">스택</span>
+                <span class="ds-chip-tag">LIFO·후입선출</span>
+              </label>
+              <label class="ds-chip">
+                <input type="checkbox" value="큐" checked>
+                <span class="ds-chip-mark" aria-hidden="true">✓</span>
+                <span class="ds-chip-icon">🚶</span>
+                <span class="ds-chip-name">큐</span>
+                <span class="ds-chip-tag">FIFO·대기열</span>
+              </label>
+              <label class="ds-chip">
+                <input type="checkbox" value="이진 트리">
+                <span class="ds-chip-mark" aria-hidden="true">✓</span>
+                <span class="ds-chip-icon">🌳</span>
+                <span class="ds-chip-name">이진 트리</span>
+                <span class="ds-chip-tag">계층·탐색</span>
+              </label>
+              <label class="ds-chip">
+                <input type="checkbox" value="그래프">
+                <span class="ds-chip-mark" aria-hidden="true">✓</span>
+                <span class="ds-chip-icon">🕸️</span>
+                <span class="ds-chip-name">그래프</span>
+                <span class="ds-chip-tag">정점·간선·경로</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem;">2단계 · AI 응답 붙여넣기</h3>
+      <p style="font-size:0.88rem; color:var(--text-muted); margin:0.5rem 0 1rem;">
+        Gemini 답변 전체를 붙여넣으세요. <code>VIRTUAL_ROW</code>·<code>SCENARIO</code>·<code>VISUAL</code>·<code>SIM_STEP</code> 형식이 있으면 자동 추출해요. 없으면 입력한 주제로 <strong>가상 데이터·상황</strong>을 먼저 만들고 이어서 시뮬레이션을 구성해요.
+      </p>
+      <div class="form-group">
+        <textarea id="aiResponse" style="min-height:160px;" placeholder="통합 프롬프트에 대한 Gemini(또는 다른 GenAI)의 답변을 여기에 붙여넣기…"></textarea>
+      </div>
+
+      <div class="sim-controls">
+        <button type="button" class="btn btn-primary" onclick="buildMasterPrompt()">통합 프롬프트 갱신</button>
+        <button type="button" class="btn btn-accent" onclick="extractSimulation()">시뮬레이션 추출·표시</button>
+        <button type="button" class="btn btn-primary" onclick="extractSimulation(true)">발표 초안까지 생성</button>
+        <button type="button" class="btn btn-primary" onclick="playSimulation()">단계 재생</button>
+        <button type="button" class="btn btn-light" style="background:#e2e8f0;color:#334155;" onclick="resetSimulation()">초기화</button>
+        <div class="sim-progress"><div class="sim-progress-bar" id="simProgressBar"></div></div>
+      </div>
+
+      <div class="sim-output" id="simOutput">
+        <div class="sim-section" id="secScenario">
+          <h3 class="sim-phase-title"><span class="sim-phase-badge">1단계</span> 가상 데이터 &amp; 상황 설정</h3>
+          <div id="scenarioPanel"></div>
+        </div>
+        <div class="sim-section hidden-block" id="secDs">
+          <h3 class="sim-phase-title"><span class="sim-phase-badge">2단계</span> 사용 자료구조 설명</h3>
+          <div class="ds-explain-grid" id="dsExplainGrid"></div>
+        </div>
+        <div class="sim-section hidden-block" id="secVisual">
+          <h3 class="sim-phase-title"><span class="sim-phase-badge">3단계</span> 시각 자료 (구조·흐름 도식)</h3>
+          <div class="visual-grid" id="visualGrid"></div>
+        </div>
+        <div class="sim-section hidden-block" id="secSteps">
+          <h3 class="sim-phase-title"><span class="sim-phase-badge">4단계</span> 연산 시뮬레이션</h3>
+          <div class="sim-steps" id="simSteps"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</section>
+
+<section id="present" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-present">
+    <div class="accordion-head">
+      <span class="section-label">Canva Presentation</span>
+      <h2>Canva 발표 패키지</h2>
+      <p class="accordion-teaser">시뮬레이션 결과 → 슬라이드 초안 → Canva 붙여넣기</p>
+    </div>
+    <span class="accordion-icon" aria-hidden="true">▼</span>
+  </button>
+  <div class="accordion-body" id="body-present" role="region" aria-label="Canva 발표">
+    <div class="accordion-body-inner present-panel-inner">
+  <div class="container">
+    <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:1.2rem;">시뮬레이션 랩에서 만든 <strong>가상 데이터·자료구조·시각 자료·연산 과정</strong>을 발표용 슬라이드 초안으로 정리해요.</p>
+
+    <div class="present-hero">
+      <div>
+        <h3>수행평가 발표 양식 (Canva)</h3>
+        <p>슬라이드별 제목·핵심 문장·발표 멘트가 준비되면, 템플릿에 복사해 가독성 있게 꾸며 주세요.</p>
+      </div>
+      <a class="btn-canva" href="https://canva.link/30fdrbjhp5ge904" target="_blank" rel="noopener">Canva 템플릿 열기 →</a>
+    </div>
+
+    <div class="present-flow">
+      <span>① 시뮬레이션 추출</span>
+      <span class="arrow">→</span>
+      <span>② 슬라이드 초안 생성</span>
+      <span class="arrow">→</span>
+      <span>③ 전체 복사</span>
+      <span class="arrow">→</span>
+      <span>④ Canva에 붙여넣기</span>
+      <span class="arrow">→</span>
+      <span>⑤ 팀이 디자인·멘트 연습</span>
+    </div>
+
+    <div class="present-actions" id="presentActions" style="display:none;">
+      <button type="button" class="present-copy-all" onclick="copyAllSlidesForCanva()">전체 슬라이드 Canva용 복사</button>
+      <button type="button" class="btn btn-primary" onclick="buildPresentationDeck()">슬라이드 다시 생성</button>
+      <a class="btn-canva" href="https://canva.link/30fdrbjhp5ge904" target="_blank" rel="noopener">Canva에서 편집하기</a>
+    </div>
+
+    <div class="present-empty" id="presentEmpty">
+      <p style="font-size:1rem; margin-bottom:0.5rem;">아직 발표 초안이 없어요</p>
+      <p style="font-size:0.88rem;">시뮬레이션 랩에서 <strong>「발표 초안까지 생성」</strong> 또는 <strong>「시뮬레이션 추출」</strong> 후<br>아래 버튼을 누르면 Canva에 넣을 슬라이드가 자동으로 만들어져요.</p>
+      <button type="button" class="btn btn-primary" style="margin-top:1rem;" onclick="buildPresentationDeckFromForm()">입력 정보만으로 발표 초안 만들기</button>
+    </div>
+
+    <div class="slide-deck" id="slideDeck"></div>
+  </div>
+    </div>
+  </div>
+</section>
+
+<section id="resources" class="accordion-panel alt">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-resources">
+    <div class="accordion-head">
+      <span class="section-label">Links &amp; Forms</span>
+      <h2>링크 · 제출 양식</h2>
+      <p class="accordion-teaser">Canva · AI 조사 폼 · 동료평가</p>
+    </div>
+    <span class="accordion-icon" aria-hidden="true">▼</span>
+  </button>
+  <div class="accordion-body" id="body-resources" role="region" aria-label="링크 및 제출">
+    <div class="accordion-body-inner">
+  <div class="container">
+    <div class="resource-grid">
+      <a class="resource-btn external" href="https://canva.link/30fdrbjhp5ge904" target="_blank" rel="noopener">
+        <div class="resource-icon">🎤</div>
+        <div class="resource-info">
+          <h4>수행평가 발표 양식</h4>
+          <p>Canva 슬라이드 템플릿 · 탐구 표현 및 공유(10점) 준비</p>
+        </div>
+        <span class="resource-dl">열기</span>
+      </a>
+      <a class="resource-btn survey" href="https://docs.google.com/forms/d/e/1FAIpQLSciUUPF42FPec4xFW7qcH1bF_Zm92VOI6i1PMC0u0KGXK7Aew/viewform?usp=publish-editor" target="_blank" rel="noopener">
+        <div class="resource-icon">🤖</div>
+        <div class="resource-info">
+          <h4>생성형 AI 활용 조사 폼</h4>
+          <p>프로젝트 <strong>진행 중</strong> · 현명하고 유용하게 AI를 썼는지 기록</p>
+        </div>
+        <span class="resource-dl">작성</span>
+      </a>
+      <a class="resource-btn form-link" href="https://docs.google.com/forms/d/e/1FAIpQLSdMRSBfv1S_5Ne0xNcma2v-4VLqul-IQmixCbYk9QEcq6CK6g/viewform?usp=publish-editor" target="_blank" rel="noopener">
+        <div class="resource-icon">👥</div>
+        <div class="resource-info">
+          <h4>태도·참여도 자기·동료평가</h4>
+          <p>수행평가 <strong>완료 후</strong> · 팀원 간 역할·참여 성실도 평가</p>
+        </div>
+        <span class="resource-dl">평가</span>
+      </a>
+    </div>
+    <div class="highlight-box" style="margin-top:1.5rem;">
+      <p><strong>제출 순서 안내:</strong> 시뮬레이션 랩 → <a href="#present" data-panel="present">Canva 슬라이드 초안</a> 복사·편집 → AI 활용 조사 폼 → 발표 → 동료평가 폼 (마감일은 담당 교사 안내를 따르세요)</p>
+    </div>
+  </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <p><strong>자료구조 구현 팀 프로젝트 · 수행평가 헬프데스크</strong></p>
+  <p style="margin-top:0.5rem;">2026학년도 3학년 1학기 정보(자료구조) · 문의는 담당 교사에게 해 주세요.</p>
+</footer>
+
+<script>
+  var simStepsData = [];
+  var visualData = [];
+  var scenarioData = { summary: '', story: '', rows: [] };
+  var simPlayIndex = 0;
+  var simPlayTimer = null;
+  var simPlayPhase = 0;
+  var presentationSlides = [];
+  var CANVA_URL = 'https://canva.link/30fdrbjhp5ge904';
+
+  var DS_KNOWLEDGE = {
+    '배열': {
+      def: '같은 타입의 요소를 연속된 메모리에 순서대로 저장하는 구조',
+      feat: '인덱스로 O(1) 접근, 크기 고정 시 삽입·삭제 비용 큼',
+      time: '접근 O(1), 탐색 O(n), 삽입·삭제 O(n)',
+      role: '고정 길이 목록, 순위표, 시간표 등 순차 데이터 저장'
+    },
+    '연결 리스트': {
+      def: '데이터와 다음 노드를 가리키는 포인터로 연결된 노드들의 집합',
+      feat: '중간 삽입·삭제 유리, 임의 접근은 순차 탐색 필요',
+      time: '접근 O(n), 삽입·삭제 O(1) (위치 알 때)',
+      role: '동적 크기 목록, 삭제·삽입이 잦은 대기열 관리'
+    },
+    '스택': {
+      def: '후입선출(LIFO) — 마지막에 넣은 데이터가 먼저 나옴',
+      feat: 'Push/Pop만 주로 사용, 함수 호출·실행 취소에 적합',
+      time: 'Push O(1), Pop O(1)',
+      role: '되돌리기, 괄호 검사, DFS 보조 구조'
+    },
+    '큐': {
+      def: '선입선출(FIFO) — 먼저 넣은 데이터가 먼저 나옴',
+      feat: 'Enqueue/Dequeue, 대기열·스케줄링에 적합',
+      time: 'Enqueue O(1), Dequeue O(1)',
+      role: '대기열, BFS, 프린터·급식 줄 시뮬레이션'
+    },
+    '이진 트리': {
+      def: '각 노드가 최대 2개의 자식을 갖는 계층 구조',
+      feat: '탐색·삽입·삭제 O(log n) (균형 시), 정렬된 데이터 관리',
+      time: '탐색·삽입·삭제 O(log n) ~ O(n)',
+      role: '검색, 우선순위, 분류·결정 트리'
+    },
+    '그래프': {
+      def: '정점(Vertex)과 간선(Edge)으로 관계를 표현하는 구조',
+      feat: '인접 행렬·리스트 표현, DFS/BFS 탐색',
+      time: '탐색 O(V+E)',
+      role: '경로 찾기, 네트워크, 지도·친구 관계 모델링'
+    }
+  };
+
+  function getSelectedDS() {
+    var boxes = document.querySelectorAll('#dsChecks input:checked');
+    var list = [];
+    boxes.forEach(function (b) { list.push(b.value); });
+    return list.length ? list : ['배열', '스택', '큐'];
+  }
+
+  function buildMasterPrompt() {
+    var team = document.getElementById('teamName').value.trim() || '[팀 이름]';
+    var topic = document.getElementById('topicTitle').value.trim() || '[프로젝트 주제]';
+    var problem = document.getElementById('problemDesc').value.trim() || '[실생활 문제]';
+    var data = document.getElementById('dataDesc').value.trim() || '[수집·활용 데이터]';
+    var dsList = getSelectedDS().join(', ');
+
+    var prompt = '나는 고등학교 3학년 정보(자료구조) 팀 프로젝트 수행평가를 준비하는 학생이다.\n'
+      + '팀: ' + team + '\n주제: ' + topic + '\n실생활 문제: ' + problem + '\n활용 데이터: ' + data + '\n희망 자료구조: ' + dsList + ' (3개 이상 반드시 포함)\n\n'
+      + '아래 형식을 반드시 지켜 마크다운으로 답해줘. 고등학생 눈높이, 전문용어는 괄호로 쉬운 뜻을 붙여줘.\n'
+      + '【중요】완성된 제출용 코드 전체는 주지 말고, 학습용 의사코드·뼈대·TODO만 제공해.\n\n'
+      + '## 1. 주제 분석 및 탐구 (만점 40점)\n'
+      + '### 1-1 실생활 문제와 자료구조 연결\n'
+      + '- 문제를 단계별로 분석하고, 왜 자료구조가 필요한지 논리적으로 서술\n'
+      + '### 1-2 자료구조 3개 이상 (각각 아래 항목 모두)\n'
+      + '#### [자료구조 이름]\n- 정의:\n- 특징:\n- 시간복잡도(주요 연산별 Big-O):\n- 우리 주제에 적용하는 방법:\n'
+      + '### 1-3 통합 해결책 (3개 이상 구조를 어떻게 함께 쓰는지)\n\n'
+      + '## 2. 실제 구현 설계 (만점 40점)\n'
+      + '### 2-1 창의적 주제·데이터 수집·저장 구조\n'
+      + '### 2-2 최적화된 자료구조 선택 이유\n'
+      + '### 2-3 연산별 단계 설명 (모든 주요 연산)\n'
+      + '### 2-4 예시 코드(C, 주석·TODO, 뼈대만)\n\n'
+      + '## 2-A. 가상 데이터 및 상황 (시뮬레이션 전에 반드시 먼저 작성)\n'
+      + 'SCENARIO|우리 주제의 구체적 상황을 2~3문장으로 (누가, 언제, 어떤 문제)\n'
+      + 'VIRTUAL_ROW|항목명|구체적 값|설명\n'
+      + '(가상 데이터 표 행 5개 이상 — 숫자·이름·시간 등 실제처럼 구체적으로)\n\n'
+      + '## 3. 시각 자료 (가상 데이터를 반영한 ASCII 다이어그램)\n'
+      + 'VISUAL|도식 제목|ASCII 다이어그램(박스·화살표)\n'
+      + '(자료구조 구조도 1개 + 처리 흐름도 1개 이상)\n\n'
+      + '## 4. 문제 해결 연산 시뮬레이션 (가상 데이터 값을 상태에 그대로 사용)\n'
+      + '형식: SIM_STEP|자료구조명|단계번호|연산명|데이터상태|설명\n'
+      + '(각 자료구조마다 최소 3단계, VIRTUAL_ROW의 실제 값을 [상태]에 포함)\n\n'
+      + '## 5. 탐구 표현 및 공유 (만점 10점) — Canva 슬라이드용\n'
+      + 'SLIDE|슬라이드번호|제목|핵심문장1|핵심문장2|발표멘트한줄\n'
+      + '(표지·목차·문제·가상데이터·자료구조별·시뮬레이션·구현·결론·Q&A, 총 8~10장)\n\n'
+      + '## 6. 팀 협업·태도 (만점 10점)\n'
+      + '- 역할 분담표, 회의 시 공유할 정보 목록, 팀원이 서로 점검할 체크리스트';
+
+    document.getElementById('masterPrompt').textContent = prompt;
+    return prompt;
+  }
+
+  function copyText(id) {
+    var el = document.getElementById(id);
+    navigator.clipboard.writeText(el.textContent).then(function () {
+      alert('통합 프롬프트가 복사되었어요. Gemini에 붙여넣어 주세요!');
+    });
+  }
+
+  function parseSimLines(text) {
+    var lines = text.split('\n');
+    var steps = [];
+    var re = /SIM_STEP\s*\|?\s*([^|]+)\s*\|?\s*(\d+)\s*\|?\s*([^|]+)\s*\|?\s*([^|]+)\s*\|?\s*(.+)/i;
+    lines.forEach(function (line) {
+      var m = line.match(re);
+      if (m) {
+        steps.push({
+          ds: m[1].trim(),
+          num: parseInt(m[2], 10),
+          op: m[3].trim(),
+          state: m[4].trim(),
+          desc: m[5].trim()
+        });
+      }
+    });
+    return steps;
+  }
+
+  function parseVirtualRows(text) {
+    var rows = [];
+    var summary = '';
+    text.split('\n').forEach(function (line) {
+      var sm = line.match(/SCENARIO\s*\|?\s*(.+)/i);
+      if (sm) summary = sm[1].trim();
+      var rm = line.match(/VIRTUAL_ROW\s*\|?\s*([^|]+)\s*\|?\s*([^|]+)\s*\|?\s*(.+)/i);
+      if (rm) rows.push({ label: rm[1].trim(), value: rm[2].trim(), desc: rm[3].trim() });
+    });
+    return { summary: summary, rows: rows };
+  }
+
+  function parseVisuals(text) {
+    var visuals = [];
+    text.split('\n').forEach(function (line) {
+      var m = line.match(/VISUAL\s*\|?\s*([^|]+)\s*\|?\s*(.+)/i);
+      if (m) visuals.push({ title: m[1].trim(), ascii: m[2].trim() });
+    });
+    return visuals;
+  }
+
+  function generateFallbackScenario(topic, problem, dataDesc, dsList) {
+    var t = topic || '자료구조 활용 프로젝트';
+    var p = problem || '실생활에서 발생하는 대기·탐색·관리 문제를 효율적으로 해결하려는 상황';
+    var summary = 'SCENARIO|' + t + ' — ' + p.substring(0, 80) + (p.length > 80 ? '…' : '');
+    var rows = [];
+    if (dataDesc && dataDesc.length > 10) {
+      rows.push({ label: '수집 데이터 개요', value: dataDesc.split(/[,，\n]/)[0].trim().substring(0, 30), desc: '팀이 활용하기로 한 핵심 데이터' });
+    }
+    var samples = [
+      { label: '사례 ID', value: 'CASE-001', desc: '가상 시뮬레이션용 식별자' },
+      { label: '측정 시각', value: '12:05 ~ 12:25', desc: '점심시간 구간 (가상)' },
+      { label: '입력 건수', value: '47건', desc: '처리 대상 데이터 개수' },
+      { label: '평균 처리 시간', value: '1.8초/건', desc: '한 건당 소요 시간' },
+      { label: '최대 대기', value: '12건', desc: '동시에 쌓인 최대 대기 수' },
+      { label: '목표', value: '대기 30% 감소', desc: '자료구조 도입 후 기대 효과' }
+    ];
+    samples.forEach(function (s) { rows.push(s); });
+    var story = '【가상 상황】 ' + t + '에서 ' + p + ' '
+      + '팀은 위 표의 가상 데이터를 바탕으로 ' + dsList.join(', ') + '을(를) 조합해 해결 과정을 시뮬레이션합니다.';
+    return { summary: summary.replace(/^SCENARIO\|/, ''), story: story, rows: rows };
+  }
+
+  function generateFallbackVisuals(dsList, scenario) {
+    var visuals = [];
+    dsList.forEach(function (ds, i) {
+      var box = '';
+      if (ds === '큐') {
+        box = '  [입구 Enqueue]     [대기열 Queue]      [출구 Dequeue]\n'
+          + '       │    12:05→A    A→B→C→D    D→12:18│\n'
+          + '       └──── 47건 중 4건 대기 중 ────┘';
+      } else if (ds === '스택') {
+        box = '  Push ↓  ┌───┐\n'
+          + '         │ D │ ← top (최근 처리: CASE-001)\n'
+          + '         │ C │\n'
+          + '         │ B │\n'
+          + '         └───┘\n'
+          + '  Pop  ↑  (되돌리기·역순 처리)';
+      } else if (ds === '배열') {
+        box = '  index: [0]   [1]   [2]   [3]  …\n'
+          + '  value: 12:05 12:08 12:11 12:15 …\n'
+          + '         └─ 시간표 배열 (O(1) 접근) ─┘';
+      } else if (ds === '그래프') {
+        box = '    (A)──2──(B)\n'
+          + '     │ \\      │\n'
+          + '     3   1    2\n'
+          + '     │   \\    │\n'
+          + '    (C)──4──(D)   ← 경로·관계 탐색';
+      } else if (ds === '이진 트리') {
+        box = '         [12:15]\n'
+          + '        /       \\\n'
+          + '   [12:08]       [12:22]\n'
+          + '   /    \\              \\\n'
+          + '[12:05] [12:11]      [12:25]';
+      } else {
+        box = '  [노드1] → [노드2] → [노드3]\n'
+          + '     ' + ds + ' 구조로 데이터 연결';
+      }
+      visuals.push({
+        title: ds + ' 구조 (가상 데이터 반영)',
+        ascii: box
+      });
+    });
+    visuals.push({
+      title: '전체 처리 흐름',
+      ascii: '  [가상 데이터 표] → [배열 저장] → [큐 대기] → [스택 보조]\n'
+        + '         │                              │\n'
+        + '         └──────── 결과: 대기 12→8건 ────┘\n'
+        + '  ※ ' + (scenario.summary || '우리 주제').substring(0, 40)
+    });
+    return visuals;
+  }
+
+  function generateFallbackSteps(topic, problem, dsList, rows) {
+    var steps = [];
+    var n = 0;
+    var v = function (i) { return rows[i] ? rows[i].value : '—'; };
+    var samples = {
+      '배열': [
+        ['초기화', 'arr[] = 빈 배열', '가상 데이터 ' + v(2) + ' 저장 공간 준비'],
+        ['삽입', 'arr = [12:05, 12:08, 12:11, …]', '시각 ' + v(1) + ' 구간 ' + v(2) + ' 건 순차 저장 (O(1) 접근)'],
+        ['조회', 'arr[3] → 12:15', '인덱스로 특정 시각 데이터 즉시 접근']
+      ],
+      '큐': [
+        ['Enqueue', '큐: [A, B, C] ← rear', '도착 순 ' + v(2) + ' — 선입선출(FIFO) 대기열'],
+        ['대기', 'front→A  rear→C  (대기 ' + v(4) + ')', '먼저 온 데이터부터 처리 순서 유지'],
+        ['Dequeue', 'A 처리 완료 → [B, C]', '처리 후 front 이동, 평균 ' + v(3)]
+      ],
+      '스택': [
+        ['Push', '스택: […, B, A]', '최근 처리 건 CASE-001 푸시'],
+        ['Peek', 'top = A (12:18 처리)', '가장 최근 연산 결과 확인'],
+        ['Pop', '되돌리기 → 이전 상태', '잘못된 입력 시 역순 복구(LIFO)']
+      ],
+      '연결 리스트': [
+        ['노드 생성', 'head → [12:05]→null', '첫 가상 레코드 노드 삽입'],
+        ['삽입', 'head→[12:05]→[12:08]→…', '동적 삽입 O(1), ' + v(2)],
+        ['삭제', '중간 노드 제거 후 연결', '처리 완료 건 리스트에서 삭제']
+      ],
+      '이진 트리': [
+        ['삽입', '루트 12:15, 좌/우 분기', '시간 순 이진 탐색 트리 구성'],
+        ['탐색', '12:11 찾기 → 2번 비교', 'O(log n) 탐색 시뮬레이션'],
+        ['순회', '중위: 12:05→12:25', '정렬된 시간 순 출력']
+      ],
+      '그래프': [
+        ['정점 추가', 'V={A,B,C,D}', '사례·경로를 정점으로 모델링'],
+        ['간선 연결', 'A—2—B, 가중치 부여', '거리·시간을 간선 가중치로'],
+        ['BFS 탐색', 'A→B→D 최단 경로', '너비 우선 탐색으로 최적 경로']
+      ]
+    };
+    dsList.forEach(function (ds) {
+      var ops = samples[ds] || [
+        ['초기화', '[]', ds + ' 생성'],
+        ['연산', '[데이터]', '가상 값 반영'],
+        ['완료', '[결과]', ds + ' 처리 완료']
+      ];
+      ops.forEach(function (o) {
+        n++;
+        steps.push({ ds: ds, num: n, op: o[0], state: o[1], desc: o[2] });
+      });
+    });
+    return steps;
+  }
+
+  function renderScenarioPanel(data) {
+    var el = document.getElementById('scenarioPanel');
+    var tableRows = data.rows.map(function (r) {
+      return '<tr><td>' + escapeHtml(r.label) + '</td><td class="val">' + escapeHtml(r.value) + '</td><td>' + escapeHtml(r.desc) + '</td></tr>';
+    }).join('');
+    el.innerHTML = '<div class="scenario-panel">'
+      + '<p class="scenario-summary">📍 ' + escapeHtml(data.summary || '프로젝트 가상 상황') + '</p>'
+      + (data.story ? '<p class="scenario-story">' + escapeHtml(data.story) + '</p>' : '')
+      + '<table class="virtual-data-table"><thead><tr><th>항목</th><th>가상 데이터 값</th><th>설명</th></tr></thead><tbody>'
+      + tableRows + '</tbody></table></div>';
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderVisuals(visuals, limit) {
+    var grid = document.getElementById('visualGrid');
+    grid.innerHTML = '';
+    var show = typeof limit === 'number' ? visuals.slice(0, limit) : visuals;
+    show.forEach(function (v) {
+      var card = document.createElement('div');
+      card.className = 'visual-card';
+      card.innerHTML = '<h4>' + escapeHtml(v.title) + '</h4><pre>' + escapeHtml(v.ascii) + '</pre>';
+      grid.appendChild(card);
+    });
+  }
+
+  function showSimSection(id, show) {
+    var sec = document.getElementById(id);
+    if (!sec) return;
+    if (show) {
+      sec.classList.remove('hidden-block', 'dim');
+    } else {
+      sec.classList.add('hidden-block');
+    }
+  }
+
+  function resetSimSections() {
+    showSimSection('secScenario', true);
+    showSimSection('secDs', false);
+    showSimSection('secVisual', false);
+    showSimSection('secSteps', false);
+  }
+
+  function renderDsCards(dsList, aiText) {
+    var grid = document.getElementById('dsExplainGrid');
+    grid.innerHTML = '';
+    dsList.forEach(function (name) {
+      var k = DS_KNOWLEDGE[name] || {
+        def: '수업에서 배운 ' + name + ' 구조',
+        feat: 'AI 응답의 「' + name + '」 섹션을 참고하세요',
+        time: '교과서·수업 자료 참조',
+        role: (document.getElementById('topicTitle').value || '우리 주제') + '에 활용'
+      };
+      var extra = '';
+      if (aiText) {
+        var re = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\S]{0,400}?(?=####|## |$)', 'i');
+        var block = aiText.match(re);
+        if (block && block[0].length > 30) {
+          extra = '<p style="margin-top:0.5rem;font-size:0.8rem;color:#475569;">AI 추출 요약: ' + block[0].substring(0, 120).replace(/\n/g, ' ') + '…</p>';
+        }
+      }
+      var card = document.createElement('div');
+      card.className = 'ds-explain-card';
+      card.innerHTML = '<h4>' + name + '</h4><dl>'
+        + '<dt>정의</dt><dd>' + k.def + '</dd>'
+        + '<dt>특징</dt><dd>' + k.feat + '</dd>'
+        + '<dt>시간복잡도</dt><dd>' + k.time + '</dd>'
+        + '<dt>우리 주제 활용</dt><dd>' + k.role + '</dd></dl>' + extra;
+      grid.appendChild(card);
+    });
+  }
+
+  function renderSteps(steps, limit) {
+    var container = document.getElementById('simSteps');
+    container.innerHTML = '';
+    var show = typeof limit === 'number' ? steps.slice(0, limit) : steps;
+    show.forEach(function (s, i) {
+      var el = document.createElement('div');
+      el.className = 'sim-step';
+      el.innerHTML = '<div class="sim-step-num">' + (i + 1) + '</div><div class="sim-step-body">'
+        + '<h5>[' + s.ds + '] ' + s.op + '</h5>'
+        + '<div class="state">' + s.state + '</div>'
+        + '<p>' + s.desc + '</p></div>';
+      container.appendChild(el);
+    });
+  }
+
+  function parseSlidesFromAI(text) {
+    var slides = [];
+    text.split('\n').forEach(function (line) {
+      var m = line.match(/SLIDE\s*\|?\s*(\d+)\s*\|?\s*([^|]+)\s*\|?\s*([^|]+)\s*\|?\s*([^|]+)\s*\|?\s*(.+)/i);
+      if (m) {
+        slides.push({
+          num: parseInt(m[1], 10),
+          title: m[2].trim(),
+          subtitle: '',
+          bullets: [m[3].trim(), m[4].trim()].filter(Boolean),
+          speaker: m[5].trim(),
+          canvaTip: 'Canva 템플릿의 동일 번호 슬라이드에 배치'
+        });
+      }
+    });
+    return slides.sort(function (a, b) { return a.num - b.num; });
+  }
+
+  function buildPresentationDeck() {
+    var team = document.getElementById('teamName').value.trim() || 'OO팀';
+    var topic = document.getElementById('topicTitle').value.trim() || '자료구조 활용 프로젝트';
+    var problem = document.getElementById('problemDesc').value.trim() || '실생활 문제를 자료구조로 해결합니다.';
+    var dsList = getSelectedDS();
+    var aiText = document.getElementById('aiResponse').value.trim();
+    var parsedAI = aiText ? parseSlidesFromAI(aiText) : [];
+    if (parsedAI.length >= 5) {
+      presentationSlides = parsedAI;
+      renderPresentationDeck();
+      return presentationSlides;
+    }
+
+    var slides = [];
+    var n = 0;
+    function addSlide(title, subtitle, bullets, speaker, canvaTip) {
+      n++;
+      slides.push({ num: n, title: title, subtitle: subtitle || '', bullets: bullets, speaker: speaker, canvaTip: canvaTip });
+    }
+
+    addSlide(
+      '자료구조 구현 프로젝트',
+      topic,
+      ['발표 팀: ' + team, '2026학년도 3학년 정보(자료구조)', '수행평가 — 팀 프로젝트'],
+      '안녕하세요, ' + team + '입니다. 오늘 주제는 「' + topic + '」입니다.',
+      'Canva 표지: 제목(크게) + 부제(주제) + 팀명'
+    );
+
+    addSlide(
+      '발표 목차',
+      '',
+      ['문제 상황과 가상 데이터', '활용 자료구조 (' + dsList.length + '종)', '문제 해결 시뮬레이션', '구현·기대 효과', '결론 및 Q&A'],
+      '발표는 문제 정의부터 시작해, 자료구조 선택 이유와 시뮬레이션 결과 순으로 설명하겠습니다.',
+      '번호·아이콘 목차 슬라이드'
+    );
+
+    var scenarioBullets = [problem.substring(0, 120) + (problem.length > 120 ? '…' : '')];
+    if (scenarioData.summary) scenarioBullets.unshift('📍 ' + scenarioData.summary);
+    addSlide(
+      '실생활 문제 정의',
+      '왜 자료구조가 필요한가?',
+      scenarioBullets,
+      '우리가 해결하려는 문제는 위와 같습니다. 단순 프로그램이 아니라, 데이터를 효율적으로 다루기 위해 자료구조가 필요합니다.',
+      '문제 상황 사진·키워드 배치'
+    );
+
+    var dataBullets = scenarioData.rows.length
+      ? scenarioData.rows.slice(0, 6).map(function (r) { return r.label + ': ' + r.value + ' — ' + r.desc; })
+      : ['시뮬레이션 랩에서 가상 데이터를 먼저 정의하세요.'];
+    addSlide(
+      '가상 데이터 및 상황',
+      '탐구·구현의 기준 데이터',
+      dataBullets,
+      '실제 수집 전, 아래 가상 데이터로 시뮬레이션했습니다. 발표와 구현은 이 값을 기준으로 설명합니다.',
+      '표 형태로 Canva에 붙여넣기 (가독성 ↑)'
+    );
+
+    addSlide(
+      '활용 자료구조 개요',
+      dsList.join(' + '),
+      dsList.map(function (name) {
+        var k = DS_KNOWLEDGE[name];
+        return name + ': ' + (k ? k.role : '핵심 구조');
+      }),
+      '총 ' + dsList.length + '가지 자료구조를 조합해 문제를 해결합니다. 각 구조는 역할이 다릅니다.',
+      '3개 아이콘·키워드 한 줄 요약'
+    );
+
+    dsList.forEach(function (name) {
+      var k = DS_KNOWLEDGE[name] || {};
+      var stepsForDs = simStepsData.filter(function (s) { return s.ds === name; }).slice(0, 2);
+      var stepText = stepsForDs.length
+        ? stepsForDs.map(function (s) { return s.op + ' → ' + s.state; }).join(' / ')
+        : '연산 과정은 시뮬레이션 슬라이드 참고';
+      addSlide(
+        name,
+        '정의 · 특징 · 시간복잡도',
+        [
+          '정의: ' + (k.def || name + ' 구조'),
+          '특징: ' + (k.feat || ''),
+          '시간복잡도: ' + (k.time || ''),
+          '우리 주제 적용: ' + (k.role || topic),
+          '연산 예: ' + stepText
+        ],
+        name + '을(를) 선택한 이유는 ' + (k.role || '문제에 적합하기') + ' 때문입니다.',
+        '한 슬라이드에 불릿 4~5개만 — 글자 크게'
+      );
+    });
+
+    var visualBullets = visualData.length
+      ? visualData.slice(0, 2).map(function (v) { return '【' + v.title + '】 구조·흐름 도식 (발표 시 화면에 표시)'; })
+      : ['시각 자료: 자료구조 구조도 + 처리 흐름도'];
+    addSlide(
+      '시각 자료 — 구조와 처리 흐름',
+      '구현 만점: 시각적 표현',
+      visualBullets,
+      '도식을 보면서 데이터가 구조 안에서 어떻게 이동하는지 단계별로 설명하겠습니다.',
+      'ASCII·도식은 Canva 도형으로 재구성하거나 캡처 삽입'
+    );
+
+    var simBullets = simStepsData.length
+      ? simStepsData.slice(0, 5).map(function (s, i) {
+          return (i + 1) + '. [' + s.ds + '] ' + s.op + ': ' + s.state;
+        })
+      : ['시뮬레이션 랩에서 연산 단계를 추출하세요.'];
+    if (simStepsData.length > 5) {
+      simBullets.push('… 외 ' + (simStepsData.length - 5) + '단계 (보고서·시연 참고)');
+    }
+    addSlide(
+      '문제 해결 연산 시뮬레이션',
+      '단계별 데이터 상태 변화',
+      simBullets,
+      '가상 데이터를 넣고, 삽입·대기·처리·완료 순으로 연산이 진행되는 과정을 시연하겠습니다.',
+      '단계 번호 + 화살표 애니메이션 권장'
+    );
+
+    addSlide(
+      '구현 및 기대 효과',
+      'C언어 구현 · 최적화',
+      [
+        '주제: ' + topic,
+        '구현: 선택한 자료구조로 핵심 연산 프로그래밍',
+        '기대 효과: ' + (scenarioData.rows[5] ? scenarioData.rows[5].value : '효율적 문제 해결'),
+        '한계·개선: 실제 데이터 확대, 다른 구조와 비교 가능'
+      ],
+      '실제 코드 시연 또는 실행 화면 캡처를 보여 드리겠습니다.',
+      '코드 블록은 짧게 — 핵심 함수만'
+    );
+
+    addSlide(
+      '결론 및 Q&A',
+      '탐구 표현 · 태도',
+      [
+        '요약: 실생활 문제 → ' + dsList.length + '종 자료구조 → 시뮬레이션·구현',
+        '배운 점: 자료구조 선택이 성능·가독성에 미치는 영향',
+        '팀 협업: 역할 분담·AI 활용(학습 도구로서)',
+        '질문 받겠습니다.'
+      ],
+      '이상으로 발표를 마칩니다. 자료구조 선택 이유나 시간복잡도에 대해 질문해 주세요.',
+      '마지막 슬라이드 — 연락처·감사 문구'
+    );
+
+    presentationSlides = slides;
+    renderPresentationDeck();
+    return presentationSlides;
+  }
+
+  function buildPresentationDeckFromForm() {
+    var topic = document.getElementById('topicTitle').value.trim();
+    var problem = document.getElementById('problemDesc').value.trim();
+    var dataDesc = document.getElementById('dataDesc').value.trim();
+    if (!scenarioData.rows.length) {
+      scenarioData = generateFallbackScenario(topic, problem, dataDesc, getSelectedDS());
+    }
+    if (!simStepsData.length) {
+      simStepsData = generateFallbackSteps(topic, problem, getSelectedDS(), scenarioData.rows);
+    }
+    if (!visualData.length) {
+      visualData = generateFallbackVisuals(getSelectedDS(), scenarioData);
+    }
+    buildPresentationDeck();
+    if (window.openAccordionPanel) window.openAccordionPanel('present', true);
+    else document.getElementById('present').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function formatSlideForCanva(slide) {
+    var lines = ['━━━━━━━━━━━━━━━━━━━━', '슬라이드 ' + slide.num + ': ' + slide.title];
+    if (slide.subtitle) lines.push('부제: ' + slide.subtitle);
+    lines.push('--- 본문 (Canva 텍스트 상자에 붙여넣기) ---');
+    slide.bullets.forEach(function (b) { lines.push('• ' + b); });
+    lines.push('--- 발표 멘트 ---');
+    lines.push(slide.speaker);
+    if (slide.canvaTip) lines.push('💡 Canva 팁: ' + slide.canvaTip);
+    return lines.join('\n');
+  }
+
+  function renderPresentationDeck() {
+    var deck = document.getElementById('slideDeck');
+    var empty = document.getElementById('presentEmpty');
+    var actions = document.getElementById('presentActions');
+    if (!presentationSlides.length) {
+      deck.innerHTML = '';
+      empty.style.display = 'block';
+      actions.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    actions.style.display = 'flex';
+    deck.innerHTML = '';
+    presentationSlides.forEach(function (slide) {
+      var card = document.createElement('article');
+      card.className = 'slide-card';
+      var bulletsHtml = slide.bullets.map(function (b) {
+        return '<li>' + escapeHtml(b) + '</li>';
+      }).join('');
+      card.innerHTML =
+        '<div class="slide-card-header">'
+        + '<div><span class="slide-num">' + slide.num + '</span>'
+        + '<h4>' + escapeHtml(slide.title) + '</h4>'
+        + (slide.subtitle ? '<div class="slide-sub">' + escapeHtml(slide.subtitle) + '</div>' : '')
+        + '</div>'
+        + '<button type="button" class="copy-btn" style="background:var(--primary);border:none;color:#fff;" onclick="copyOneSlide(' + slide.num + ')">이 슬라이드만 복사</button>'
+        + '</div>'
+        + '<div class="slide-card-body">'
+        + '<ul class="slide-bullets">' + bulletsHtml + '</ul>'
+        + '<div class="slide-speaker"><strong>🎤 발표 멘트 (이렇게 말해 보세요)</strong>'
+        + escapeHtml(slide.speaker) + '</div>'
+        + '<p class="slide-canva-tip">💡 ' + escapeHtml(slide.canvaTip || '') + '</p>'
+        + '</div>';
+      deck.appendChild(card);
+    });
+  }
+
+  function copyOneSlide(num) {
+    var slide = presentationSlides.find(function (s) { return s.num === num; });
+    if (!slide) return;
+    navigator.clipboard.writeText(formatSlideForCanva(slide)).then(function () {
+      alert('슬라이드 ' + num + ' 내용이 복사되었어요. Canva 해당 페이지에 붙여넣으세요!');
+    });
+  }
+
+  function copyAllSlidesForCanva() {
+    if (!presentationSlides.length) {
+      buildPresentationDeckFromForm();
+    }
+    var team = document.getElementById('teamName').value.trim() || 'OO팀';
+    var topic = document.getElementById('topicTitle').value.trim() || '';
+    var header = '【' + team + ' — ' + topic + '】 Canva 발표 슬라이드 초안\n'
+      + '템플릿: ' + CANVA_URL + '\n'
+      + '※ 아래 내용을 슬라이드 순서대로 Canva에 붙여넣고, 팀이 문장·디자인을 꼭 검토하세요.\n\n';
+    var body = presentationSlides.map(formatSlideForCanva).join('\n\n');
+    navigator.clipboard.writeText(header + body).then(function () {
+      alert('전체 ' + presentationSlides.length + '장 슬라이드가 복사되었어요!\nCanva 템플릿을 열고 슬라이드별로 붙여넣어 주세요.');
+    });
+  }
+
+  function extractSimulation(scrollToPresent) {
+    if (simPlayTimer) clearInterval(simPlayTimer);
+    simPlayTimer = null;
+    buildMasterPrompt();
+    var aiText = document.getElementById('aiResponse').value.trim();
+    var topic = document.getElementById('topicTitle').value.trim();
+    var problem = document.getElementById('problemDesc').value.trim();
+    var dataDesc = document.getElementById('dataDesc').value.trim();
+    var dsList = getSelectedDS();
+
+    var parsed = aiText ? parseVirtualRows(aiText) : { summary: '', rows: [] };
+    if (parsed.rows.length >= 2) {
+      scenarioData = {
+        summary: parsed.summary || topic,
+        story: '',
+        rows: parsed.rows
+      };
+    } else {
+      scenarioData = generateFallbackScenario(topic, problem, dataDesc, dsList);
+    }
+    if (!scenarioData.story) {
+      scenarioData.story = '【가상 상황】 아래 표는 실제 수집 전 단계의 **시뮬레이션용 가상 데이터**예요. 이어지는 시각 자료·연산 단계는 이 값을 기준으로 진행돼요.';
+    }
+
+    visualData = aiText ? parseVisuals(aiText) : [];
+    if (visualData.length < 1) {
+      visualData = generateFallbackVisuals(dsList, scenarioData);
+    }
+
+    simStepsData = aiText ? parseSimLines(aiText) : [];
+    if (simStepsData.length < 3) {
+      simStepsData = generateFallbackSteps(topic, problem, dsList, scenarioData.rows);
+    }
+
+    resetSimSections();
+    renderScenarioPanel(scenarioData);
+    renderDsCards(dsList, aiText);
+    renderVisuals(visualData);
+    renderSteps(simStepsData);
+
+    showSimSection('secScenario', true);
+    showSimSection('secDs', true);
+    showSimSection('secVisual', true);
+    showSimSection('secSteps', true);
+
+    document.getElementById('simOutput').classList.add('visible');
+    var total = 1 + dsList.length + visualData.length + simStepsData.length;
+    updateProgress(total, total);
+    buildPresentationDeck();
+    if (scrollToPresent) {
+      if (window.openAccordionPanel) window.openAccordionPanel('present', true);
+      else document.getElementById('present').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      if (window.openAccordionPanel) window.openAccordionPanel('simlab', true);
+      else document.getElementById('simOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function updateProgress(current, total) {
+    var pct = total ? (current / total) * 100 : 0;
+    document.getElementById('simProgressBar').style.width = pct + '%';
+  }
+
+  function playSimulation() {
+    if (!simStepsData.length) {
+      extractSimulation();
+    }
+    if (simPlayTimer) clearInterval(simPlayTimer);
+    var dsList = getSelectedDS();
+    var aiText = document.getElementById('aiResponse').value.trim();
+    var totalSteps = 1 + 1 + visualData.length + simStepsData.length;
+    simPlayPhase = 0;
+    simPlayIndex = 0;
+
+    document.getElementById('simOutput').classList.add('visible');
+    resetSimSections();
+    renderScenarioPanel(scenarioData);
+    renderDsCards(dsList, aiText);
+    document.getElementById('visualGrid').innerHTML = '';
+    document.getElementById('simSteps').innerHTML = '';
+    updateProgress(1, totalSteps);
+
+    simPlayTimer = setInterval(function () {
+      simPlayPhase++;
+      if (simPlayPhase === 1) {
+        showSimSection('secDs', true);
+        updateProgress(2, totalSteps);
+      } else if (simPlayPhase >= 2 && simPlayPhase <= visualData.length + 1) {
+        showSimSection('secVisual', true);
+        var vLimit = simPlayPhase - 1;
+        renderVisuals(visualData, vLimit);
+        updateProgress(1 + 1 + vLimit, totalSteps);
+      } else {
+        showSimSection('secSteps', true);
+        simPlayIndex++;
+        renderSteps(simStepsData, simPlayIndex);
+        updateProgress(1 + 1 + visualData.length + simPlayIndex, totalSteps);
+        if (simPlayIndex >= simStepsData.length) {
+          clearInterval(simPlayTimer);
+          simPlayTimer = null;
+        }
+      }
+    }, 1000);
+  }
+
+  function resetSimulation() {
+    if (simPlayTimer) clearInterval(simPlayTimer);
+    simPlayTimer = null;
+    simStepsData = [];
+    visualData = [];
+    scenarioData = { summary: '', story: '', rows: [] };
+    simPlayIndex = 0;
+    simPlayPhase = 0;
+    document.getElementById('simOutput').classList.remove('visible');
+    document.getElementById('scenarioPanel').innerHTML = '';
+    document.getElementById('simSteps').innerHTML = '';
+    document.getElementById('dsExplainGrid').innerHTML = '';
+    document.getElementById('visualGrid').innerHTML = '';
+    resetSimSections();
+    presentationSlides = [];
+    renderPresentationDeck();
+    updateProgress(0, 1);
+  }
+
+  function updateDsCount() {
+    var n = getSelectedDS().length;
+    var el = document.getElementById('dsCount');
+    if (el) {
+      el.textContent = n + '개 선택';
+      el.style.borderColor = n >= 3 ? 'var(--mint)' : 'var(--sky-light)';
+      el.style.color = n >= 3 ? 'var(--mint-dark)' : 'var(--sky-dark)';
+    }
+  }
+
+  function initAccordion() {
+    var panels = document.querySelectorAll('.accordion-panel');
+    var navLinks = document.querySelectorAll('nav a[data-panel]');
+
+    function setPanelOpen(panel, open) {
+      if (!panel) return;
+      panel.classList.toggle('is-open', open);
+      var trigger = panel.querySelector('.accordion-trigger');
+      var bodyId = trigger && trigger.getAttribute('aria-controls');
+      var body = bodyId && document.getElementById(bodyId);
+      if (trigger) trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (body) body.setAttribute('aria-hidden', open ? 'false' : 'true');
+    }
+
+    function syncNavActive() {
+      navLinks.forEach(function (a) {
+        var pid = a.getAttribute('data-panel');
+        var panel = document.getElementById(pid);
+        a.classList.toggle('is-active', panel && panel.classList.contains('is-open'));
+      });
+    }
+
+    function expandPanel(id, scroll) {
+      var panel = document.getElementById(id);
+      if (panel) setPanelOpen(panel, true);
+      syncNavActive();
+      if (scroll && id) {
+        setTimeout(function () {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 80);
+      }
+    }
+
+    panels.forEach(function (panel) {
+      setPanelOpen(panel, false);
+      var trigger = panel.querySelector('.accordion-trigger');
+      if (!trigger) return;
+      trigger.addEventListener('click', function () {
+        var isOpen = panel.classList.contains('is-open');
+        setPanelOpen(panel, !isOpen);
+        syncNavActive();
+      });
+    });
+
+    navLinks.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var id = a.getAttribute('data-panel');
+        var panel = document.getElementById(id);
+        if (panel && !panel.classList.contains('is-open')) {
+          expandPanel(id, true);
+        } else if (panel) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          syncNavActive();
+        }
+      });
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var id = (a.getAttribute('data-panel') || a.getAttribute('href') || '').replace('#', '');
+        if (!id || !document.getElementById(id)) return;
+        e.preventDefault();
+        expandPanel(id, true);
+      });
+    });
+
+    window.openAccordionPanel = expandPanel;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    buildMasterPrompt();
+    initAccordion();
+    updateDsCount();
+    document.querySelectorAll('#dsChecks input').forEach(function (cb) {
+      cb.addEventListener('change', updateDsCount);
+    });
+  });
+</script>
+</body>
+</html>
