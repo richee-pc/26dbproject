@@ -1543,6 +1543,7 @@
         <p>팀 이름·주제·입력 내용·AI 답변·시뮬레이션·발표 슬라이드 초안이 선생님 Google 시트와 Drive에 저장돼요. 시뮬레이션을 추출한 뒤 제출하는 것을 권장해요.</p>
         <button type="button" class="btn-submit-teacher" id="btnSubmitTeacher" onclick="submitToTeacher()">선생님께 제출하기</button>
         <p class="submit-status" id="submitStatus" aria-live="polite"></p>
+        <iframe name="googleSubmitFrame" id="googleSubmitFrame" title="제출 전송" style="position:absolute;width:0;height:0;border:0;visibility:hidden" tabindex="-1"></iframe>
       </div>
 
       <div class="sim-output" id="simOutput">
@@ -1822,34 +1823,42 @@
     if (statusEl) statusEl.textContent = '저장 요청을 보내는 중이에요…';
 
     var payload = collectSubmissionPayload();
+    var jsonStr = JSON.stringify(payload);
 
-    fetch(GOOGLE_SUBMIT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    })
-      .then(function () {
-        if (btn) {
-          btn.textContent = '제출 완료 ✓';
-          setTimeout(function () {
-            btn.disabled = false;
-            btn.textContent = '선생님께 제출하기';
-          }, 4000);
-        }
-        if (statusEl) {
-          statusEl.textContent = '제출했어요! 선생님이 시트·Drive에서 확인하실 수 있어요.';
-        }
-        alert('제출했어요!\n팀: ' + team + '\n주제: ' + topic + '\n\n선생님 Google 시트에 반영될 때까지 잠시 기다려 주세요.');
-      })
-      .catch(function () {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = '선생님께 제출하기';
-        }
-        if (statusEl) statusEl.textContent = '';
-        alert('네트워크 오류가 났어요. 와이파이를 확인하고 다시 눌러 주세요.');
-      });
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = GOOGLE_SUBMIT_URL;
+    form.target = 'googleSubmitFrame';
+    form.acceptCharset = 'UTF-8';
+    form.style.display = 'none';
+
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = jsonStr;
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(function () {
+      if (form.parentNode) form.parentNode.removeChild(form);
+    }, 3000);
+
+    if (btn) {
+      btn.textContent = '제출 완료 ✓';
+      setTimeout(function () {
+        btn.disabled = false;
+        btn.textContent = '선생님께 제출하기';
+      }, 4000);
+    }
+    if (statusEl) {
+      statusEl.textContent = '전송했어요. 1~2분 뒤 선생님 시트 「제출」 탭을 확인해 주세요.';
+    }
+    alert(
+      '제출 요청을 보냈어요!\n팀: ' + team + '\n주제: ' + topic
+      + '\n\n시트에 안 보이면 선생님께 「웹 앱 액세스: 모든 사용자」 설정을 확인해 달라고 해 주세요.'
+    );
   }
 
   function copyText(id) {
