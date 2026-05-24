@@ -181,8 +181,7 @@ def main() -> None:
         )
         st.caption(PAGES[page_key]["subtitle"])
         st.divider()
-        st.caption("제출 데이터 → 시트 **「제출_통합」**")
-        st.caption("상세 JSON → Drive **학생_제출_통합**")
+        st.caption("시트 **「제출_통합」** · Drive **.txt** + **.json**")
         if submit_url != DEFAULT_GOOGLE_SUBMIT_URL:
             st.caption("제출 URL: Secrets 적용됨")
 
