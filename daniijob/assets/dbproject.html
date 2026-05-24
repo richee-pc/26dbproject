@@ -843,6 +843,47 @@
       margin: 0.4rem 0;
     }
     .sim-step-body p { font-size: 0.85rem; color: var(--text-muted); }
+    .submit-teacher-card {
+      margin-top: 2rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--mint);
+      background: #ecfdf5;
+    }
+    .submit-teacher-card h3 {
+      font-size: 1.05rem;
+      color: var(--mint-dark);
+      margin-bottom: 0.5rem;
+    }
+    .submit-teacher-card p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+    .btn-submit-teacher {
+      background: var(--mint-dark);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+    }
+    .btn-submit-teacher:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .btn-submit-teacher:disabled {
+      opacity: 0.65;
+      cursor: wait;
+      transform: none;
+    }
+    .submit-status {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--mint-dark);
+      min-height: 1.2em;
+    }
     .sim-controls {
       display: flex;
       flex-wrap: wrap;
@@ -1497,6 +1538,13 @@
         <div class="sim-progress"><div class="sim-progress-bar" id="simProgressBar"></div></div>
       </div>
 
+      <div class="submit-teacher-card">
+        <h3>📤 선생님께 제출하기</h3>
+        <p>팀 이름·주제·입력 내용·AI 답변·시뮬레이션·발표 슬라이드 초안이 선생님 Google 시트와 Drive에 저장돼요. 시뮬레이션을 추출한 뒤 제출하는 것을 권장해요.</p>
+        <button type="button" class="btn-submit-teacher" id="btnSubmitTeacher" onclick="submitToTeacher()">선생님께 제출하기</button>
+        <p class="submit-status" id="submitStatus" aria-live="polite"></p>
+      </div>
+
       <div class="sim-output" id="simOutput">
         <div class="sim-section" id="secScenario">
           <h3 class="sim-phase-title"><span class="sim-phase-badge">1단계</span> 가상 데이터 &amp; 상황 설정</h3>
@@ -1634,6 +1682,8 @@
   var simPlayPhase = 0;
   var presentationSlides = [];
   var CANVA_URL = 'https://canva.link/30fdrbjhp5ge904';
+  /** 선생님: Apps Script 웹 앱 URL로 교체 (또는 Streamlit Secrets google_submit_url) */
+  var GOOGLE_SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbyzPPoMxi18c750Wx9-EoXl9eryUtmnNlhrIanqwMnf2HzYOLiAoyOp-2vzQ_leBodgNw/exec';
 
   var DS_KNOWLEDGE = {
     '배열': {
@@ -1721,6 +1771,85 @@
 
     document.getElementById('masterPrompt').textContent = prompt;
     return prompt;
+  }
+
+  function collectSubmissionPayload() {
+    var masterEl = document.getElementById('masterPrompt');
+    return {
+      teamName: document.getElementById('teamName').value.trim(),
+      topicTitle: document.getElementById('topicTitle').value.trim(),
+      problemDesc: document.getElementById('problemDesc').value.trim(),
+      dataDesc: document.getElementById('dataDesc').value.trim(),
+      dsList: getSelectedDS(),
+      aiResponse: document.getElementById('aiResponse').value.trim(),
+      masterPrompt: masterEl ? masterEl.innerText.trim() : '',
+      scenarioData: scenarioData,
+      visualData: visualData,
+      simStepsData: simStepsData,
+      presentationSlides: presentationSlides,
+      submittedAt: new Date().toISOString(),
+      pageUrl: window.location.href
+    };
+  }
+
+  function isSubmitUrlConfigured() {
+    return GOOGLE_SUBMIT_URL
+      && GOOGLE_SUBMIT_URL.indexOf('http') === 0
+      && GOOGLE_SUBMIT_URL.indexOf('PASTE_WEB_APP') === -1;
+  }
+
+  function submitToTeacher() {
+    var statusEl = document.getElementById('submitStatus');
+    var btn = document.getElementById('btnSubmitTeacher');
+
+    if (!isSubmitUrlConfigured()) {
+      alert('아직 선생님 제출 주소가 연결되지 않았어요.\n담당 선생님께 문의해 주세요.');
+      if (statusEl) statusEl.textContent = '';
+      return;
+    }
+
+    var team = document.getElementById('teamName').value.trim();
+    var topic = document.getElementById('topicTitle').value.trim();
+    if (!team || !topic) {
+      alert('팀 이름과 프로젝트 주제를 입력한 뒤 제출해 주세요.');
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '제출 중…';
+    }
+    if (statusEl) statusEl.textContent = '저장 요청을 보내는 중이에요…';
+
+    var payload = collectSubmissionPayload();
+
+    fetch(GOOGLE_SUBMIT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(function () {
+        if (btn) {
+          btn.textContent = '제출 완료 ✓';
+          setTimeout(function () {
+            btn.disabled = false;
+            btn.textContent = '선생님께 제출하기';
+          }, 4000);
+        }
+        if (statusEl) {
+          statusEl.textContent = '제출했어요! 선생님이 시트·Drive에서 확인하실 수 있어요.';
+        }
+        alert('제출했어요!\n팀: ' + team + '\n주제: ' + topic + '\n\n선생님 Google 시트에 반영될 때까지 잠시 기다려 주세요.');
+      })
+      .catch(function () {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '선생님께 제출하기';
+        }
+        if (statusEl) statusEl.textContent = '';
+        alert('네트워크 오류가 났어요. 와이파이를 확인하고 다시 눌러 주세요.');
+      });
   }
 
   function copyText(id) {
