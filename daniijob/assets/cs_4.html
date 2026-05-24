@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>메모리 탐험대 | 컴퓨터 구조 4단원 — 기억 장치</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sky: #38bdf8;
+      --sky-dark: #0284c7;
+      --primary: #0ea5e9;
+      --primary-dark: #0369a1;
+      --accent: #84cc16;
+      --accent-soft: #ecfccb;
+      --mint: #6ee7b7;
+      --mint-dark: #059669;
+      --purple: #8b5cf6;
+      --purple-soft: #ede9fe;
+      --warn: #fef9c3;
+      --warn-text: #854d0e;
+      --success: #22c55e;
+      --bg: #f0f9ff;
+      --surface: #fff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #bae6fd;
+      --radius: 18px;
+      --radius-sm: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Gowun Dodum', -apple-system, 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 17px;
+    }
+    .hero {
+      background: linear-gradient(160deg, var(--sky-dark) 0%, var(--primary) 55%, #38bdf8 100%);
+      color: #fff;
+      padding: 3.5rem 1.5rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-content { position: relative; max-width: 680px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.25);
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      margin-bottom: 1rem;
+      border: 2px solid rgba(255,255,255,0.4);
+    }
+    .hero h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); font-weight: 800; line-height: 1.35; margin-bottom: 0.75rem; }
+    .hero-lead { font-size: 1.02rem; opacity: 0.95; margin-bottom: 1.5rem; }
+    .hero-story {
+      text-align: left;
+      background: rgba(255,255,255,0.15);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      font-size: 0.95rem;
+      border: 2px solid rgba(255,255,255,0.25);
+      margin-bottom: 1.5rem;
+    }
+    .hero-story p { margin-bottom: 0.65rem; }
+    .hero-story p:last-child { margin-bottom: 0; }
+    .btn-start {
+      display: inline-block;
+      background: #fff;
+      color: var(--primary-dark);
+      font-weight: 700;
+      padding: 0.75rem 1.8rem;
+      border-radius: 999px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .btn-start:hover { transform: translateY(-2px); }
+    .progress-wrap {
+      background: #fff;
+      border-bottom: 2px solid var(--border);
+      padding: 0.6rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 110;
+    }
+    .progress-inner { max-width: 960px; margin: 0 auto; }
+    .progress-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.35rem; display: flex; justify-content: space-between; }
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); width: 0%; transition: width 0.4s ease; border-radius: 999px; }
+    nav.main-nav {
+      position: sticky;
+      top: 52px;
+      z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid var(--border);
+      padding: 0.6rem 1rem;
+    }
+    nav.main-nav ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.5rem;
+      justify-content: center;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    nav.main-nav a {
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+    }
+    nav.main-nav a:hover, nav.main-nav a.is-active { color: var(--primary-dark); background: var(--accent-soft); }
+    .container { max-width: 880px; margin: 0 auto; padding: 0 1.25rem; }
+    section.accordion-panel { border-bottom: 2px solid var(--border); background: rgba(255,255,255,0.4); }
+    section.accordion-panel.alt { background: rgba(255,255,255,0.65); }
+    section.accordion-panel.is-open { background: #fff; }
+    .accordion-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.15rem 1.25rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+    }
+    .accordion-trigger:hover { background: rgba(14, 165, 233, 0.08); }
+    .accordion-panel.is-open .accordion-trigger { background: #e0f2fe; }
+    .accordion-head h2 { font-size: clamp(1.15rem, 3vw, 1.45rem); font-weight: 800; margin: 0.2rem 0; }
+    .section-label { font-size: 0.72rem; color: var(--primary-dark); font-weight: 700; letter-spacing: 0.06em; }
+    .accordion-teaser { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .accordion-panel.is-open .accordion-teaser { white-space: normal; }
+    .accordion-icon {
+      flex-shrink: 0;
+      width: 2rem; height: 2rem;
+      border-radius: 50%;
+      background: #e0f2fe;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      transition: transform 0.3s;
+    }
+    .accordion-panel.is-open .accordion-icon { transform: rotate(180deg); }
+    .accordion-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s ease; }
+    .accordion-panel.is-open .accordion-body { grid-template-rows: 1fr; }
+    .accordion-body-inner { overflow: hidden; padding-bottom: 2rem; }
+    .block-def, .block-analogy, .block-quiz {
+      border-radius: var(--radius-sm);
+      padding: 1.25rem 1.35rem;
+      margin-bottom: 1.25rem;
+    }
+    .block-def { background: #fff; border: 2px solid var(--border); }
+    .block-def h3, .block-analogy h3, .block-quiz h3 {
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .block-analogy { background: #ecfdf5; border: 2px solid var(--mint); }
+    .block-quiz { background: var(--purple-soft); border: 2px solid #c4b5fd; }
+    .one-line {
+      background: var(--warn);
+      color: var(--warn-text);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1.1rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin: 1rem 0 1.25rem;
+      border-left: 4px solid #eab308;
+    }
+    .one-line::before { content: '📌 한 줄 정리: '; }
+    ul.content-list { padding-left: 1.2rem; margin: 0.5rem 0; }
+    ul.content-list li { margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.92rem; }
+    ul.content-list strong { color: var(--text); }
+    table.simple { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 0.75rem 0; }
+    table.simple th, table.simple td { border: 1px solid var(--border); padding: 0.5rem 0.65rem; text-align: left; }
+    table.simple th { background: #e0f2fe; }
+    .viz {
+      background: #f8fafc;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    .viz-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem; font-weight: 700; }
+    .pyramid { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .pyr-level {
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+    .pyr-level.l1 { width: 28%; background: #ef4444; }
+    .pyr-level.l2 { width: 42%; background: #f97316; }
+    .pyr-level.l3 { width: 58%; background: var(--primary); }
+    .pyr-level.l4 { width: 74%; background: #6366f1; }
+    .pyr-level.l5 { width: 92%; background: #64748b; }
+    .pyr-cap { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.5rem; }
+    .elevator {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 140px;
+    }
+    .elev-floor {
+      flex: 1;
+      max-width: 72px;
+      border-radius: 8px 8px 0 0;
+      padding: 0.5rem 0.35rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+    .elev-floor.f4 { height: 120px; background: #94a3b8; }
+    .elev-floor.f3 { height: 95px; background: #6366f1; }
+    .elev-floor.f2 { height: 70px; background: var(--primary); }
+    .elev-floor.f1 { height: 45px; background: #f97316; }
+    .elev-floor.f0 { height: 28px; background: #ef4444; }
+    .flow-hit {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .flow-box { padding: 0.4rem 0.65rem; border-radius: 8px; background: #e0f2fe; }
+    .flow-box.hit { background: #bbf7d0; color: #166534; }
+    .flow-box.miss { background: #fecaca; color: #991b1b; }
+    .flow-arrow { color: var(--text-muted); }
+    .hdd-timeline { display: flex; flex-direction: column; gap: 0.5rem; text-align: left; max-width: 320px; margin: 0 auto; }
+    .hdd-step {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+    }
+    .hdd-num {
+      width: 1.6rem; height: 1.6rem;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+    .quiz-item { margin-bottom: 1rem; }
+    .quiz-item p { font-size: 0.92rem; margin-bottom: 0.5rem; font-weight: 600; }
+    .quiz-options { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .quiz-opt {
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      border: 2px solid #c4b5fd;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz-opt:hover { background: #f5f3ff; }
+    .quiz-opt.correct { background: #bbf7d0; border-color: var(--success); }
+    .quiz-opt.wrong { background: #fecaca; border-color: #ef4444; }
+    .quiz-feedback { font-size: 0.82rem; margin-top: 0.35rem; min-height: 1.2em; }
+    .cache-slider-wrap { margin: 1rem 0; }
+    .cache-slider-wrap label { font-size: 0.88rem; font-weight: 600; }
+    .cache-slider-wrap input[type=range] { width: 100%; margin: 0.5rem 0; accent-color: var(--primary); }
+    .cache-result {
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.88rem;
+    }
+    .bar-viz { height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden; margin-top: 0.5rem; }
+    .bar-viz-fill { height: 100%; background: var(--primary); transition: width 0.3s; }
+    details.advanced {
+      margin-top: 1rem;
+      border: 2px solid #cbd5e1;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+    }
+    details.advanced summary { cursor: pointer; font-weight: 700; font-size: 0.9rem; color: var(--primary-dark); }
+    .think-cards { display: grid; gap: 1rem; margin-top: 1rem; }
+    .think-card {
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.1rem;
+    }
+    .think-card h4 { font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--primary-dark); }
+    footer.site-footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      background: #e0f2fe;
+    }
+    .block-lab {
+      background: linear-gradient(135deg, #f5f3ff 0%, #e0f2fe 100%);
+      border: 2px solid #a78bfa;
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+    .block-lab h3 { font-size: 1.05rem; color: #5b21b6; margin-bottom: 0.35rem; }
+    .block-lab .lab-desc { font-size: 0.86rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .lab-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .lab-tab {
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      border: 2px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .lab-tab.is-active { background: var(--purple); color: #fff; border-color: var(--purple); }
+    .lab-panel { display: none; }
+    .lab-panel.is-active { display: block; }
+    .lab-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin-bottom: 0.75rem; }
+    .lab-field label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--text-muted); }
+    .lab-field input, .lab-field select {
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0.45rem 0.65rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      min-width: 4.5rem;
+    }
+    .btn-lab {
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-lab.secondary { background: #e2e8f0; color: var(--text); }
+    .btn-lab:hover { filter: brightness(1.05); }
+    .lab-log {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      max-height: 140px;
+      overflow-y: auto;
+      margin-top: 0.75rem;
+      font-family: ui-monospace, monospace;
+      line-height: 1.5;
+    }
+    .lab-log .hit { color: #86efac; }
+    .lab-log .miss { color: #fca5a5; }
+    .cache-slots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    @media (min-width: 500px) { .cache-slots { grid-template-columns: repeat(8, 1fr); } }
+    .cache-slot {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.35rem;
+      text-align: center;
+      font-size: 0.72rem;
+      background: #fff;
+      min-height: 3.5rem;
+      transition: background 0.25s, border-color 0.25s;
+    }
+    .cache-slot .slot-num { font-weight: 700; color: var(--primary-dark); }
+    .cache-slot .slot-val { font-size: 0.85rem; margin-top: 0.2rem; }
+    .cache-slot.hit-flash { background: #bbf7d0; border-color: var(--success); }
+    .cache-slot.miss-flash { background: #fecaca; border-color: #ef4444; }
+    .cache-slot.empty .slot-val { color: #94a3b8; }
+    .mem-bar-wrap { margin: 1rem 0; }
+    .mem-bar {
+      display: flex;
+      height: 2.5rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      background: #e2e8f0;
+    }
+    .mem-seg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+      min-width: 2px;
+      transition: flex 0.3s;
+    }
+    .mem-seg.free { background: #94a3b8; color: #1e293b; }
+    .mem-seg.used { background: var(--primary); }
+    .mem-seg.os { background: #6366f1; }
+    .mem-legend { display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.78rem; margin-top: 0.5rem; }
+    .formula-box {
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+      margin-top: 0.75rem;
+      border: 1px dashed var(--border);
+    }
+    .formula-box strong { color: var(--primary-dark); }
+    .stat-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+    .stat-pill {
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+    .chip {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 8px;
+      background: #334155;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border: 3px solid #64748b;
+    }
+    .chip-bus {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      padding: 0.5rem;
+      background: #fef9c3;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+    }
+    .student-bar {
+      background: #fff;
+      border-bottom: 2px solid var(--border);
+      padding: 0.65rem 1rem;
+    }
+    .student-bar-inner {
+      max-width: 880px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+    .student-bar .lab-field input { min-width: 7rem; }
+    .block-submit {
+      background: linear-gradient(135deg, #fef3c7 0%, #fce7f3 50%, #e0f2fe 100%);
+      border: 3px solid #f59e0b;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    .block-submit h3 { color: #b45309; font-size: 1.15rem; margin-bottom: 0.5rem; }
+    .mission-list { list-style: none; margin: 1rem 0; }
+    .mission-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      font-size: 0.9rem;
+      border-bottom: 1px dashed rgba(0,0,0,0.08);
+    }
+    .mission-list li.done { color: #166534; }
+    .mission-list li.pending { color: var(--text-muted); }
+    .mission-check {
+      flex-shrink: 0;
+      width: 1.35rem;
+      height: 1.35rem;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      background: #fff;
+    }
+    .mission-list li.done .mission-check { background: var(--success); border-color: var(--success); color: #fff; }
+    .reflect-field { margin-bottom: 1rem; }
+    .reflect-field label { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .reflect-field textarea {
+      width: 100%;
+      min-height: 72px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      padding: 0.65rem;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      resize: vertical;
+    }
+    .btn-submit-teacher {
+      background: #059669;
+      color: #fff;
+      border: none;
+      padding: 0.85rem 2rem;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+      margin-top: 0.5rem;
+    }
+    .btn-submit-teacher:disabled { opacity: 0.5; cursor: not-allowed; }
+    .submit-status { font-size: 0.88rem; margin-top: 0.75rem; min-height: 1.3em; font-weight: 600; }
+    .checkpoint-box {
+      background: #fff7ed;
+      border: 2px solid #fdba74;
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin: 1rem 0 1.25rem;
+    }
+    .checkpoint-box h4 { font-size: 0.9rem; color: #c2410c; margin-bottom: 0.5rem; }
+    .checkpoint-box textarea {
+      width: 100%;
+      min-height: 56px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      padding: 0.5rem;
+      border: 2px solid #fed7aa;
+      border-radius: 8px;
+    }
+    .checkpoint-done { font-size: 0.8rem; color: #166534; margin-top: 0.35rem; }
+    @media (max-width: 600px) {
+      .elev-floor { font-size: 0.6rem; max-width: 56px; }
+      nav.main-nav a { font-size: 0.72rem; padding: 0.3rem 0.5rem; }
+      .cache-slots { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-content">
+    <span class="hero-badge">컴퓨터 구조 · 4단원</span>
+    <h1>메모리 탐험대<br>CPU의 비밀 창고를 열어라</h1>
+    <p class="hero-lead">기억 장치를 하나의 모험으로! 쉬운 말과 비유로 배워요.</p>
+    <div class="hero-story">
+      <p><strong>🎮 게임이 갑자기 멈춘 날</strong></p>
+      <p>격한 게임을 하다 보면 <strong>로딩 화면</strong>이 뜨죠? 그 순간 CPU는 외칩니다. <em>“그 맵 데이터 어디 있어? 빨리 가져와!”</em></p>
+      <p>CPU는 세상에서 제일 빠른 일꾼인데, 데이터는 멀리 있는 <strong>창고</strong>에 있어요. 창고가 멀수록 기다리는 시간이 길어지고, 그게 곧 <strong>렉</strong>이 됩니다.</p>
+      <p>오늘은 <strong>주기억 · 캐시 · 보조기억</strong> 이 세 친구가 어떻게 협력하는지 탐험해요!</p>
+    </div>
+    <button type="button" class="btn-start" onclick="openPanel('s0', true)">탐험 시작하기 →</button>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress-label">
+      <span>학습 진행</span>
+      <span id="progressText">0 / 7 완료</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" style="margin-top:0.35rem">
+      <span>학습 미션</span>
+      <span id="missionProgressText">0 / 0 완료</span>
+    </div>
+    <div class="progress-bar" style="height:6px;margin-top:0.2rem"><div class="progress-fill" id="missionProgressFill" style="background:linear-gradient(90deg,#f59e0b,#059669)"></div></div>
+  </div>
+</div>
+
+<div class="student-bar">
+  <div class="student-bar-inner">
+    <div class="lab-field">
+      <label for="studentName">이름 *</label>
+      <input type="text" id="studentName" placeholder="홍길동" maxlength="20" autocomplete="name">
+    </div>
+    <div class="lab-field">
+      <label for="studentClass">학번·반 (예: 3-1-12)</label>
+      <input type="text" id="studentClass" placeholder="3학년 1반 12번" maxlength="30">
+    </div>
+    <p style="font-size:0.78rem;color:var(--text-muted);flex:1;min-width:200px">미션을 완료한 뒤 맨 아래 <strong>「선생님께 제출」</strong>에서 제출해 주세요.</p>
+  </div>
+</div>
+
+<nav class="main-nav" aria-label="단원 목차">
+  <ul>
+    <li><a href="#s0" data-panel="s0">지도</a></li>
+    <li><a href="#s1" data-panel="s1">§1 계층</a></li>
+    <li><a href="#s2" data-panel="s2">§2 주기억</a></li>
+    <li><a href="#s3" data-panel="s3">§3 RAM·ROM</a></li>
+    <li><a href="#s4" data-panel="s4">§4 캐시</a></li>
+    <li><a href="#s5" data-panel="s5">§5 보조</a></li>
+    <li><a href="#s6" data-panel="s6">§6 심화</a></li>
+    <li><a href="#lab" data-panel="lab">🔬 실습</a></li>
+    <li><a href="#submit" data-panel="submit">📤 제출</a></li>
+    <li><a href="#end" data-panel="end">마무리</a></li>
+  </ul>
+</nav>
+
+<main id="accordionMain">
+
+<!-- §0 지도 -->
+<section id="s0" class="accordion-panel is-open">
+  <button type="button" class="accordion-trigger" aria-expanded="true" aria-controls="body-s0">
+    <div class="accordion-head">
+      <span class="section-label">START</span>
+      <h2>오늘의 탐험 지도</h2>
+      <p class="accordion-teaser">4단원에서 만날 6개 거점</p>
+    </div>
+    <span class="accordion-icon" aria-hidden="true">▼</span>
+  </button>
+  <div class="accordion-body" id="body-s0" role="region">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-def">
+          <h3>🗺️ 이번 단원에서 배울 것</h3>
+          <table class="simple">
+            <thead><tr><th>순서</th><th>주제</th><th>핵심</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>기억 장치·계층</td><td>빠름↔비쌈, 피라미드</td></tr>
+              <tr><td>2</td><td>주기억</td><td>지금 돌아가는 프로그램의 집</td></tr>
+              <tr><td>3</td><td>RAM·ROM</td><td>작업판 vs 설명서</td></tr>
+              <tr><td>4</td><td>캐시</td><td>적중·실패, 지역성</td></tr>
+              <tr><td>5</td><td>보조기억</td><td>HDD·SSD·광디스크</td></tr>
+              <tr><td>6</td><td>확장·RAID</td><td>더 크게·더 안전하게</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="viz">
+          <div class="viz-title">컨셉: 3층 도서관 + 번개 배달</div>
+          <div class="elevator">
+            <div class="elev-floor f0" title="CPU">CPU<br>책상</div>
+            <div class="elev-floor f1" title="캐시">캐시<br>서랍</div>
+            <div class="elev-floor f2" title="RAM">RAM<br>열람실</div>
+            <div class="elev-floor f3" title="보조">HDD<br>SSD</div>
+            <div class="elev-floor f4" title="보조">지하<br>창고</div>
+          </div>
+          <p class="pyr-cap">위로 갈수록 빠르고 비싸고 작아요 ↑</p>
+        </div>
+        <div class="one-line">빠를수록 비싸고 작고, 느릴수록 싸고 큽니다.</div>
+        <div class="block-quiz" data-quiz-group="s0">
+          <h3>✅ 확인 퀴즈</h3>
+          <div class="quiz-item" data-answer="1">
+            <p>Q. CPU와 직접 통신하는 기억 장치는?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">보조기억</button>
+              <button type="button" class="quiz-opt" data-val="1">주기억</button>
+              <button type="button" class="quiz-opt" data-val="2">CD-ROM</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- §1 계층 -->
+<section id="s1" class="accordion-panel alt">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-s1">
+    <div class="accordion-head">
+      <span class="section-label">§1</span>
+      <h2>기억 장치와 계층 구조</h2>
+      <p class="accordion-teaser">창고·급식·피라미드</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-s1">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-def">
+          <h3>📖 개념의 정의</h3>
+          <p><strong>기억 장치</strong>는 프로그램과 데이터를 <strong>저장했다가 꺼내 쓰는 공간</strong>이에요.</p>
+          <ul class="content-list">
+            <li><strong>주기억</strong>: CPU와 <strong>직접</strong> 데이터를 주고받는 메모리</li>
+            <li><strong>보조기억</strong>: 당장 안 쓰는 것을 <strong>오래 보관</strong>, 필요할 때 주기억으로 옮김</li>
+            <li><strong>접근 시간</strong>: 읽고 쓰는 데 걸리는 시간</li>
+            <li><strong>기억 용량</strong>: 얼마나 담을 수 있는지</li>
+            <li><strong>휘발성</strong>: 전원 OFF → 내용 삭제 (RAM) / <strong>비휘발성</strong>: 남음 (ROM, SSD)</li>
+          </ul>
+        </div>
+        <div class="block-analogy">
+          <h3>🍱 쉬운 비유 — 학교 급식</h3>
+          <p>CPU = <strong>너의 식판</strong>, 주기억 = <strong>급식 카운터</strong>(오늘 메뉴만), 보조기억 = <strong>냉동 창고</strong>(다음 주 메뉴 보관).</p>
+        </div>
+        <div class="viz">
+          <div class="viz-title">기억 장치 계층 피라미드</div>
+          <div class="pyramid">
+            <div class="pyr-level l1">레지스터 · 가장 빠름</div>
+            <div class="pyr-level l2">캐시</div>
+            <div class="pyr-level l3">주기억 (RAM)</div>
+            <div class="pyr-level l4">보조기억 (SSD/HDD)</div>
+            <div class="pyr-level l5">테이프 등 — 가장 느림·큼</div>
+          </div>
+        </div>
+        <div class="one-line">컴퓨터는 ‘빠른 메모리 + 큰 창고’를 단계적으로 씁니다.</div>
+        <div class="checkpoint-box" data-checkpoint="cp_s1">
+          <h4>✋ 선생님 확인용 — §1 소감 (20자 이상)</h4>
+          <textarea id="cp_s1" placeholder="예: 빠른 기억은 비싸고, 느린 기억은 크다는 걸 이해했어요."></textarea>
+          <p class="checkpoint-done" id="cp_s1_done"></p>
+        </div>
+        <div class="block-quiz" data-quiz-group="s1">
+          <h3>✅ 확인 퀴즈</h3>
+          <div class="quiz-item" data-answer="2">
+            <p>Q. 전원을 꺼도 내용이 남는 기억은?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">RAM</button>
+              <button type="button" class="quiz-opt" data-val="1">DRAM</button>
+              <button type="button" class="quiz-opt" data-val="2">ROM·SSD</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+          <div class="quiz-item" data-answer="0">
+            <p>Q. 계층에서 보통 가장 아래(느리고 큼)에 가까운 것?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">보조기억</button>
+              <button type="button" class="quiz-opt" data-val="1">캐시</button>
+              <button type="button" class="quiz-opt" data-val="2">레지스터</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- §2 주기억 -->
+<section id="s2" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-s2">
+    <div class="accordion-head">
+      <span class="section-label">§2</span>
+      <h2>주기억 장치</h2>
+      <p class="accordion-teaser">지금 돌아가는 프로그램의 책상</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-s2">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-def">
+          <h3>📖 개념의 정의</h3>
+          <p><strong>주기억</strong>은 실행 중인 프로그램·데이터가 올라가는 <strong>작업 공간</strong>이에요.</p>
+          <ul class="content-list">
+            <li><strong>시스템 영역</strong>: 운영체제(OS)</li>
+            <li><strong>사용자 영역</strong>: 게임, 브라우저 등 우리 앱</li>
+            <li><strong>단일 사용자 할당</strong>: 한 사람이 책상 전체 사용 (단순, 낭비 가능)</li>
+            <li><strong>고정·가변 분할</strong>: 여러 프로그램을 칸막이·맞춤 크기로 배치</li>
+            <li><strong>기억 집약</strong>: 빈 칸을 모아 큰 공간 만들기 (정리 중엔 잠깐 멈춤)</li>
+          </ul>
+        </div>
+        <div class="block-analogy">
+          <h3>📚 쉬운 비유 — 동시에 여러 과제하는 책상</h3>
+          <p>책상이 작으면 과제가 <strong>조각(단편화)</strong> 나서 들어가기 어렵고, <strong>기억 집약</strong>은 책상 위를 싹 정리해 빈 곳을 한곳으로 모으는 거예요.</p>
+        </div>
+        <div class="one-line">주기억 = 지금 돌아가는 프로그램의 ‘책상’입니다.</div>
+
+        <div class="block-lab" id="inline-lab-partition">
+          <h3>🧪 미니 실습 — 주기억 분할·할당</h3>
+          <p class="lab-desc">총 256칸 주기억에 프로그램을 넣어 보세요. 알고리즘별로 빈 칸(단편화)이 달라져요.</p>
+          <div class="lab-row">
+            <div class="lab-field">
+              <label>프로그램 이름</label>
+              <input type="text" id="partName" value="게임A" maxlength="8">
+            </div>
+            <div class="lab-field">
+              <label>크기 (칸)</label>
+              <input type="number" id="partSize" value="40" min="5" max="120">
+            </div>
+            <div class="lab-field">
+              <label>할당 방식</label>
+              <select id="partAlgo">
+                <option value="first">최초 적합</option>
+                <option value="best">최적 적합</option>
+                <option value="worst">최악 적합</option>
+              </select>
+            </div>
+            <button type="button" class="btn-lab" onclick="partitionAllocate()">적재하기</button>
+            <button type="button" class="btn-lab secondary" onclick="partitionCompact()">기억 집약</button>
+            <button type="button" class="btn-lab secondary" onclick="partitionReset()">초기화</button>
+          </div>
+          <div class="mem-bar-wrap">
+            <div class="mem-bar" id="partBar"></div>
+            <div class="mem-legend">
+              <span>🟣 OS(64)</span>
+              <span>🔵 프로그램</span>
+              <span>⬜ 빈 칸</span>
+            </div>
+          </div>
+          <p id="partMsg" style="font-size:0.88rem;color:var(--text-muted);min-height:1.4em"></p>
+          <p style="font-size:0.82rem;color:var(--primary-dark);margin-top:0.5rem">💡 <strong>「적재하기」</strong>를 1번 이상 누르면 실습 미션이 완료돼요.</p>
+        </div>
+
+        <div class="block-quiz" data-quiz-group="s2">
+          <h3>✅ 확인 퀴즈</h3>
+          <div class="quiz-item" data-answer="1">
+            <p>Q. 운영체제가 저장되는 영역은?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">사용자 영역</button>
+              <button type="button" class="quiz-opt" data-val="1">시스템 프로그램 영역</button>
+              <button type="button" class="quiz-opt" data-val="2">캐시</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- §3 RAM ROM -->
+<section id="s3" class="accordion-panel alt">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-s3">
+    <div class="accordion-head">
+      <span class="section-label">§3</span>
+      <h2>RAM과 ROM</h2>
+      <p class="accordion-teaser">작업판 vs 설명서</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-s3">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-def">
+          <h3>📖 개념의 정의</h3>
+          <table class="simple">
+            <thead><tr><th>종류</th><th>쉬운 말</th><th>특징</th></tr></thead>
+            <tbody>
+              <tr><td><strong>RAM</strong></td><td>지우개 있는 작업판</td><td>읽기·쓰기 자유, <strong>휘발성</strong>, 주기억으로 사용</td></tr>
+              <tr><td><strong>DRAM</strong></td><td>충전지 컵</td><td>저렴·대용량, 재충전 필요</td></tr>
+              <tr><td><strong>SRAM</strong></td><td>빠른 개인 서랍</td><td>비쌈·소용량, <strong>캐시</strong>에 사용</td></tr>
+              <tr><td><strong>ROM</strong></td><td>인쇄된 교칙</td><td>비휘발성, 읽기 위주</td></tr>
+              <tr><td><strong>플래시</strong></td><td>수정 가능한 공책</td><td>USB·SSD의 기반</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="block-analogy">
+          <h3>☕ 쉬운 비유</h3>
+          <p>DRAM = 공용 충전 스테이션(자주 충전), SRAM = 선생님 서랍(즉시 꺼냄), ROM = 학교 교칙 책(항상 있음).</p>
+        </div>
+        <div class="one-line">RAM은 ‘지우개 있는 작업판’, ROM은 ‘남는 설명서’입니다.</div>
+        <div class="block-quiz" data-quiz-group="s3">
+          <h3>✅ 확인 퀴즈</h3>
+          <div class="quiz-item" data-answer="0">
+            <p>Q. 캐시에 주로 쓰이는 빠른 RAM은?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">SRAM</button>
+              <button type="button" class="quiz-opt" data-val="1">DRAM</button>
+              <button type="button" class="quiz-opt" data-val="2">Mask ROM</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- §4 캐시 -->
+<section id="s4" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-s4">
+    <div class="accordion-head">
+      <span class="section-label">§4 ★핵심</span>
+      <h2>캐시 기억 장치</h2>
+      <p class="accordion-teaser">적중·실패와 예상 문제 노트</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-s4">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-def">
+          <h3>📖 개념의 정의</h3>
+          <p><strong>캐시</strong>는 주기억 데이터 <strong>일부를 CPU 가까이</strong> 복사해 두는 <strong>고속 완충 기억</strong>이에요.</p>
+          <ul class="content-list">
+            <li><strong>적중(Hit)</strong> = “찾았다!” → 빠름</li>
+            <li><strong>실패(Miss)</strong> = 없음 → 주기억에서 블록 단위로 가져옴 → 느림</li>
+            <li><strong>참조의 지역성</strong>: 자주 쓰는 일부만 반복 접근 → 캐시가 효과적</li>
+            <li><strong>적중률</strong>이 높을수록 컴퓨터가 빨리 느껴짐</li>
+          </ul>
+        </div>
+        <div class="viz">
+          <div class="viz-title">CPU가 데이터를 찾는 순서</div>
+          <div class="flow-hit">
+            <span class="flow-box">CPU</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-box">캐시 확인</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-box hit">적중 ✓</span>
+            <span style="color:var(--text-muted)">또는</span>
+            <span class="flow-box miss">실패 ✗</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-box">주기억</span>
+          </div>
+        </div>
+        <div class="block-analogy">
+          <h3>📝 쉬운 비유 — 시험 전날 예상 문제 노트</h3>
+          <p>전과목 교과서(주기억)를 다 읽기엔 늦어요. <strong>자주 나올 단원만</strong> 노트(캐시)에 적어 두고, 시험장에서 노트에 있으면 바로 풀어요!</p>
+        </div>
+        <div class="cache-slider-wrap">
+          <label>🎚️ 적중률 체험 (캐시 50ns, 주기억 400ns 가정)</label>
+          <input type="range" id="hitSlider" min="50" max="99" value="90" aria-label="적중률">
+          <div class="cache-result">
+            <span id="hitLabel">적중률 90%</span> → 평균 접근 시간: <strong id="avgTime">85</strong> ns
+            <div class="bar-viz"><div class="bar-viz-fill" id="speedBar" style="width:75%"></div></div>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.35rem">막대가 길수록 체감 속도 ↑</p>
+          </div>
+        </div>
+        <div class="block-lab">
+          <h3>🧪 미니 실습 — 직접 사상 계산</h3>
+          <p class="lab-desc">주기억 블록 번호 <strong>j</strong>, 캐시 슬롯 수 <strong>m</strong> → 슬롯 번호 <strong>i = j mod m</strong></p>
+          <div class="lab-row">
+            <div class="lab-field"><label>블록 번호 j</label><input type="number" id="mapJ" value="13" min="0" max="999"></div>
+            <div class="lab-field"><label>슬롯 수 m</label><input type="number" id="mapM" value="8" min="2" max="32"></div>
+            <button type="button" class="btn-lab" onclick="calcDirectMap()">계산하기</button>
+          </div>
+          <div class="formula-box" id="mapResult">슬롯 번호 i = 13 mod 8 = <strong>5</strong></div>
+        </div>
+
+        <details class="advanced">
+          <summary>🔬 심화: 사상(매핑) 3가지</summary>
+          <ul class="content-list" style="margin-top:0.75rem">
+            <li><strong>직접 사상</strong>: 정해진 서랍 칸에만 넣기 (간단)</li>
+            <li><strong>연관 사상</strong>: 아무 빈 칸 (빠르지만 비쌈)</li>
+            <li><strong>집합 연관</strong>: 칸 묶음 안에서 선택 (절충)</li>
+          </ul>
+        </details>
+        <div class="one-line">캐시 = ‘미리 꺼내 둔 인기 메뉴’로 기다림을 줄입니다.</div>
+        <div class="checkpoint-box" data-checkpoint="cp_s4">
+          <h4>✋ 선생님 확인용 — 캐시 적중·실패 설명 (20자 이상)</h4>
+          <textarea id="cp_s4" placeholder="예: 적중은 캐시에 있을 때, 실패는 주기억에서 가져올 때예요."></textarea>
+          <p class="checkpoint-done" id="cp_s4_done"></p>
+        </div>
+        <div class="block-quiz" data-quiz-group="s4">
+          <h3>✅ 확인 퀴즈</h3>
+          <div class="quiz-item" data-answer="1">
+            <p>Q. CPU가 데이터를 먼저 찾는 곳?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">HDD</button>
+              <button type="button" class="quiz-opt" data-val="1">캐시</button>
+              <button type="button" class="quiz-opt" data-val="2">CD-ROM</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+          <div class="quiz-item" data-answer="2">
+            <p>Q. 자주 쓰는 영역만 반복 접근하는 성질?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">단편화</button>
+              <button type="button" class="quiz-opt" data-val="1">포매팅</button>
+              <button type="button" class="quiz-opt" data-val="2">참조의 지역성</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- §5 보조 -->
+<section id="s5" class="accordion-panel alt">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-s5">
+    <div class="accordion-head">
+      <span class="section-label">§5</span>
+      <h2>보조 기억 장치</h2>
+      <p class="accordion-teaser">지하 대형 창고 HDD·SSD</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-s5">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-def">
+          <h3>📖 개념의 정의</h3>
+          <p><strong>보조기억</strong>은 계층 <strong>최하단</strong> — 느리지만 <strong>대용량·저렴</strong>해요.</p>
+          <table class="simple">
+            <thead><tr><th>장치</th><th>특징</th></tr></thead>
+            <tbody>
+              <tr><td><strong>HDD</strong></td><td>자기 디스크, 기계 이동, 대용량</td></tr>
+              <tr><td><strong>SSD</strong></td><td>반도체, 빠르고 충격에 강함</td></tr>
+              <tr><td><strong>CD/DVD</strong></td><td>광디스크, 배포·멀티미디어</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:0.75rem;font-size:0.9rem"><strong>HDD 접근 시간</strong> = 탐색 시간 + 회전 지연 + 데이터 전송 시간</p>
+        </div>
+        <div class="viz">
+          <div class="viz-title">HDD가 데이터를 읽는 3단계</div>
+          <div class="hdd-timeline">
+            <div class="hdd-step"><span class="hdd-num">1</span><span><strong>탐색</strong> — 헤드가 트랙으로 이동</span></div>
+            <div class="hdd-step"><span class="hdd-num">2</span><span><strong>회전 지연</strong> — 원하는 섹터가 헤드 아래로</span></div>
+            <div class="hdd-step"><span class="hdd-num">3</span><span><strong>전송</strong> — 데이터 읽기</span></div>
+          </div>
+        </div>
+        <div class="block-analogy">
+          <h3>💿 쉬운 비유</h3>
+          <p><strong>HDD</strong> = LP판 + 바늘 (원하는 곡 찾으려 팔이 움직임), <strong>SSD</strong> = 번호 누르면 바로 나오는 전자 서랍.</p>
+        </div>
+        <div class="one-line">보조기억 = ‘모든 파일이 잠자는 지하 창고’입니다.</div>
+
+        <div class="block-lab">
+          <h3>🧪 미니 실습 — HDD 접근 시간 계산</h3>
+          <p class="lab-desc">디스크 접근 시간 = 탐색 + 회전 지연 + 전송 (교재 공식 체험)</p>
+          <div class="lab-row">
+            <div class="lab-field"><label>탐색 (ms)</label><input type="number" id="hddSeek" value="15" min="0" step="0.1"></div>
+            <div class="lab-field"><label>회전 지연 (ms)</label><input type="number" id="hddRot" value="8.35" min="0" step="0.01"></div>
+            <div class="lab-field"><label>전송 (ms)</label><input type="number" id="hddXfer" value="0.5" min="0" step="0.01"></div>
+            <button type="button" class="btn-lab" onclick="calcHddAccess()">합계 계산</button>
+          </div>
+          <div class="formula-box" id="hddResult">총 접근 시간 = <strong>23.85 ms</strong></div>
+        </div>
+
+        <div class="block-quiz" data-quiz-group="s5">
+          <h3>✅ 확인 퀴즈</h3>
+          <div class="quiz-item" data-answer="2">
+            <p>Q. 충격에 강한 최근 저장장치?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">자기 테이프</button>
+              <button type="button" class="quiz-opt" data-val="1">플로피디스크</button>
+              <button type="button" class="quiz-opt" data-val="2">SSD</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- §6 심화 -->
+<section id="s6" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-s6">
+    <div class="accordion-head">
+      <span class="section-label">§6 심화</span>
+      <h2>기억 확장 &amp; RAID</h2>
+      <p class="accordion-teaser">더 넓게·더 안전하게</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-s6">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-def">
+          <h3>📖 개념의 정의</h3>
+          <ul class="content-list">
+            <li><strong>워드 길이 확장</strong>: 칩 여러 개를 나란히 — 한 번에 더 많은 비트</li>
+            <li><strong>워드 용량 확장</strong>: 칩 선택 신호로 주소 확장 — 저장 칸 수 증가</li>
+            <li><strong>RAID</strong>: 디스크 여러 개를 묶어 속도·안전성 향상</li>
+          </ul>
+          <table class="simple">
+            <thead><tr><th>RAID</th><th>쉬운 말</th></tr></thead>
+            <tbody>
+              <tr><td>RAID 0</td><td>속도 UP (백업 없음)</td></tr>
+              <tr><td>RAID 1</td><td>거울 복사 — 하나 고장나도 OK</td></tr>
+              <tr><td>RAID 5</td><td>나눠 저장 + 복구 정보</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="block-analogy">
+          <h3>👥 쉬운 비유</h3>
+          <p><strong>길이 확장</strong> = 책상을 옆으로 이어 붙이기, <strong>용량 확장</strong> = 책장 층을 위로 쌓기, <strong>RAID 1</strong> = 숙제를 두 명이 똑같이 복사해 둠.</p>
+        </div>
+        <div class="one-line">확장 = ‘더 넓게·더 높게’, RAID = ‘여러 창고를 팀으로’.</div>
+
+        <div class="block-lab">
+          <h3>🧪 미니 실습 — 워드 길이 확장</h3>
+          <p class="lab-desc">1K×8비트 RAM 칩 4개를 나란히 연결 → 1K×32비트 모듈 (교재 ch07)</p>
+          <div class="chip-row" id="chipRow">
+            <div class="chip">8bit</div>
+            <div class="chip">8bit</div>
+            <div class="chip">8bit</div>
+            <div class="chip">8bit</div>
+          </div>
+          <div class="chip-bus" id="chipBusLabel">→ 데이터 버스 32비트 (한 번에 4바이트)</div>
+          <div class="lab-row" style="margin-top:0.75rem">
+            <div class="lab-field"><label>칩 개수</label><input type="number" id="chipCount" value="4" min="2" max="8"></div>
+            <div class="lab-field"><label>칩당 비트</label><input type="number" id="chipBits" value="8" min="4" max="16" step="4"></div>
+            <button type="button" class="btn-lab" onclick="calcChipExpand()">다시 그리기</button>
+          </div>
+        </div>
+
+        <div class="block-quiz" data-quiz-group="s6">
+          <h3>✅ 확인 퀴즈</h3>
+          <div class="quiz-item" data-answer="1">
+            <p>Q. 데이터를 복제해 안전하게 하는 RAID?</p>
+            <div class="quiz-options">
+              <button type="button" class="quiz-opt" data-val="0">RAID 0</button>
+              <button type="button" class="quiz-opt" data-val="1">RAID 1</button>
+              <button type="button" class="quiz-opt" data-val="2">(없음)</button>
+            </div>
+            <p class="quiz-feedback"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 실습 연구소 -->
+<section id="lab" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-lab">
+    <div class="accordion-head">
+      <span class="section-label">LAB</span>
+      <h2>🔬 실습 연구소</h2>
+      <p class="accordion-teaser">캐시 동작·적중률·사상·주기억 분할 시뮬레이션</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-lab">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <p style="font-size:0.92rem;color:var(--text-muted);margin-bottom:1rem">교과서 실습을 웹에서 직접 해 볼 수 있어요. 탭을 눌러 실습을 바꿔 보세요.</p>
+
+        <div class="block-lab">
+          <div class="lab-tabs" role="tablist">
+            <button type="button" class="lab-tab is-active" data-lab="cache-sim">① 캐시 동작</button>
+            <button type="button" class="lab-tab" data-lab="hit-calc">② 적중률 계산</button>
+            <button type="button" class="lab-tab" data-lab="mapping">③ 사상·교체</button>
+            <button type="button" class="lab-tab" data-lab="locality">④ 지역성 체험</button>
+          </div>
+
+          <!-- ① 캐시 동작 시뮬 -->
+          <div id="lab-cache-sim" class="lab-panel is-active">
+            <h3>캐시 적중·실패 시뮬레이터</h3>
+            <p class="lab-desc">직접 사상: <strong>슬롯 = 블록번호 mod 8</strong>. CPU가 블록을 요청할 때 캐시를 먼저 확인해요.</p>
+            <div class="stat-pills">
+              <span class="stat-pill" id="cacheStatHits">적중 0</span>
+              <span class="stat-pill" id="cacheStatMiss">실패 0</span>
+              <span class="stat-pill" id="cacheStatRate">적중률 0%</span>
+            </div>
+            <div class="cache-slots" id="cacheSlots"></div>
+            <div class="lab-row">
+              <div class="lab-field"><label>블록 번호</label><input type="number" id="cacheBlockIn" value="5" min="0" max="63"></div>
+              <button type="button" class="btn-lab" onclick="cacheRequest()">1회 요청</button>
+              <button type="button" class="btn-lab secondary" onclick="cacheRunPreset()">예시 실행</button>
+              <button type="button" class="btn-lab secondary" onclick="cacheReset()">초기화</button>
+            </div>
+            <p style="font-size:0.82rem;color:var(--text-muted)">예시 순서: 5 → 5 → 13 → 5 → 21 (지역성 관찰)</p>
+            <div class="lab-log" id="cacheLog">[시작] 캐시 8슬롯, 비어 있음</div>
+          </div>
+
+          <!-- ② 적중률 계산 -->
+          <div id="lab-hit-calc" class="lab-panel">
+            <h3>평균 접근 시간 · 적중률 계산기</h3>
+            <p class="lab-desc">T<sub>평균</sub> = H × T<sub>캐시</sub> + (1−H) × T<sub>주기억</sub></p>
+            <div class="lab-row">
+              <div class="lab-field"><label>적중률 H (%)</label><input type="number" id="calcH" value="90" min="0" max="100"></div>
+              <div class="lab-field"><label>T 캐시 (ns)</label><input type="number" id="calcTc" value="50" min="1"></div>
+              <div class="lab-field"><label>T 주기억 (ns)</label><input type="number" id="calcTm" value="400" min="1"></div>
+              <button type="button" class="btn-lab" onclick="calcHitFormula()">계산</button>
+            </div>
+            <div class="formula-box" id="calcHitResult"></div>
+            <table class="simple" style="margin-top:1rem">
+              <thead><tr><th>적중률</th><th>평균(ns)</th></tr></thead>
+              <tbody id="calcHitTable"></tbody>
+            </table>
+          </div>
+
+          <!-- ③ 사상·교체 -->
+          <div id="lab-mapping" class="lab-panel">
+            <h3>사상 함수 비교 &amp; 교체 알고리즘</h3>
+            <p class="lab-desc">같은 블록이 서로 다른 사상 방식에서 어디에 들어가는지 비교해요.</p>
+            <div class="lab-row">
+              <div class="lab-field"><label>블록 j</label><input type="number" id="cmpJ" value="10" min="0"></div>
+              <div class="lab-field"><label>직접사상 m</label><input type="number" id="cmpM" value="4" min="2" max="16"></div>
+              <div class="lab-field"><label>집합연관 v</label><input type="number" id="cmpV" value="2" min="2" max="8"></div>
+            </div>
+            <button type="button" class="btn-lab" onclick="compareMapping()" style="margin-bottom:0.75rem">비교하기</button>
+            <div class="formula-box" id="cmpMapResult"></div>
+            <hr style="border:none;border-top:2px dashed var(--border);margin:1.25rem 0">
+            <h4 style="font-size:0.95rem;margin-bottom:0.5rem">교체 알고리즘 (슬롯 4칸, 순서대로 채움)</h4>
+            <p class="lab-desc">꽉 찬 뒤 새 블록이 오면 LRU / FIFO / Random 중 무엇을보낼지 눌러 보세요.</p>
+            <div class="cache-slots" id="replaceSlots" style="grid-template-columns:repeat(4,1fr)"></div>
+            <div class="lab-row">
+              <button type="button" class="btn-lab secondary" onclick="replaceInit()">4칸 채우기</button>
+              <button type="button" class="btn-lab" onclick="replaceStep('lru')">LRU로 교체</button>
+              <button type="button" class="btn-lab" onclick="replaceStep('fifo')">FIFO로 교체</button>
+              <button type="button" class="btn-lab" onclick="replaceStep('random')">Random 교체</button>
+            </div>
+            <div class="lab-log" id="replaceLog"></div>
+          </div>
+
+          <!-- ④ 지역성 -->
+          <div id="lab-locality" class="lab-panel">
+            <h3>참조의 지역성 — 패턴 비교</h3>
+            <p class="lab-desc">같은 10번 요청이라도 <strong>순서</strong>에 따라 적중률이 달라져요.</p>
+            <div class="lab-row">
+              <button type="button" class="btn-lab" onclick="localityRun('seq')">순차 패턴 (0~9)</button>
+              <button type="button" class="btn-lab" onclick="localityRun('repeat')">반복 패턴 (2,2,2…)</button>
+              <button type="button" class="btn-lab" onclick="localityRun('random')">무작위 패턴</button>
+            </div>
+            <div class="stat-pills" id="localityStats"></div>
+            <div class="lab-log" id="localityLog"></div>
+          </div>
+        </div>
+
+        <div class="checkpoint-box" data-checkpoint="cp_lab">
+          <h4>✋ 선생님 확인용 — 실습 소감 (30자 이상)</h4>
+          <textarea id="cp_lab" placeholder="예: 캐시 예시 실행에서 같은 블록을 다시 요청하면 적중이 났어요."></textarea>
+          <p class="checkpoint-done" id="cp_lab_done"></p>
+        </div>
+        <p style="font-size:0.85rem;color:var(--text-muted)">실습 탭에서 <strong>예시 실행</strong>, <strong>지역성 패턴</strong>, <strong>적중률 계산</strong>을 해 보세요.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 제출 -->
+<section id="submit" class="accordion-panel">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-submit">
+    <div class="accordion-head">
+      <span class="section-label">SUBMIT</span>
+      <h2>📤 선생님께 제출하기</h2>
+      <p class="accordion-teaser">미션 완료 후 학습 결과 전송</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-submit">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-submit">
+          <h3>학습 미션 체크리스트</h3>
+          <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.5rem">아래 항목이 모두 ✅ 이어야 제출할 수 있어요. 퀴즈는 틀려도 다시 읽고 도전해 보세요!</p>
+          <ul class="mission-list" id="missionList"></ul>
+
+          <div class="reflect-field">
+            <label for="reflectSummary">오늘 배운 것 한 줄 요약 *</label>
+            <textarea id="reflectSummary" placeholder="예: 기억 장치는 CPU 가까울수록 빠르고, 캐시는 자주 쓰는 데이터를 미리 두는 곳이에요."></textarea>
+          </div>
+          <div class="reflect-field">
+            <label for="reflectQuestion">가장 어려웠던 개념 &amp; 이해한 점</label>
+            <textarea id="reflectQuestion" placeholder="예: 사상 함수가 헷갈렸는데, j mod m 으로 슬롯을 정하는 연습이 도움이 됐어요."></textarea>
+          </div>
+
+          <button type="button" class="btn-submit-teacher" id="btnSubmitTeacher" disabled>선생님께 제출하기</button>
+          <p class="submit-status" id="submitStatus" aria-live="polite"></p>
+          <iframe name="googleSubmitFrame" id="googleSubmitFrame" title="제출" style="position:absolute;width:0;height:0;border:0;visibility:hidden" tabindex="-1"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 마무리 -->
+<section id="end" class="accordion-panel alt">
+  <button type="button" class="accordion-trigger" aria-expanded="false" aria-controls="body-end">
+    <div class="accordion-head">
+      <span class="section-label">FINISH</span>
+      <h2>마무리 — 사고 실험</h2>
+      <p class="accordion-teaser">만약 캐시가 사라진다면?</p>
+    </div>
+    <span class="accordion-icon">▼</span>
+  </button>
+  <div class="accordion-body" id="body-end">
+    <div class="accordion-body-inner">
+      <div class="container">
+        <div class="block-def">
+          <h3>🧪 상황</h3>
+          <p>같은 게임 PC에서 <strong>A: 캐시 O, RAM 16GB</strong> vs <strong>B: 캐시 X, RAM 16GB</strong> (상상)</p>
+        </div>
+        <div class="think-cards">
+          <div class="think-card">
+            <h4>질문 1</h4>
+            <p>B 컴퓨터에서 CPU는 매번 어디까지 가야 할까요?</p>
+            <details><summary>힌트 보기</summary><p style="margin-top:0.5rem;font-size:0.88rem;color:var(--text-muted)">캐시를 건너뛰고 <strong>주기억</strong>까지 자주 가야 해요.</p></details>
+          </div>
+          <div class="think-card">
+            <h4>질문 2</h4>
+            <p>로딩·프레임 드랍이 늘어날까요, 줄어들까요?</p>
+            <details><summary>힌트 보기</summary><p style="margin-top:0.5rem;font-size:0.88rem;color:var(--text-muted)">평균 접근 시간이 길어져 <strong>늘어납니다</strong>.</p></details>
+          </div>
+          <div class="think-card">
+            <h4>질문 3</h4>
+            <p>돈을 쓴다면 RAM? SSD? CPU? 각각 어떤 계층인가요?</p>
+            <details><summary>힌트 보기</summary><p style="margin-top:0.5rem;font-size:0.88rem;color:var(--text-muted)">RAM=주기억, SSD=보조기억, CPU=처리 장치. <strong>병목</strong>이 어디인지 먼저 생각해 보세요!</p></details>
+          </div>
+        </div>
+        <div class="one-line">빠른 CPU도 ‘가까운 기억’ 없으면 헛돌기 쉽습니다.</div>
+        <p style="text-align:center;margin-top:1.5rem;font-size:1.1rem;font-weight:700;color:var(--primary-dark)">🎉 탐험 완료! 수고했어요!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <p>컴퓨터 구조 4단원 · 기억 장치 (IT CookBook 컴퓨터 구조와 원리 3.0 ch07~09 기반)</p>
+  <p style="margin-top:0.35rem">정보 · 컴퓨터 구조</p>
+</footer>
+
+<script>
+(function () {
+  var GOOGLE_SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbzCS5Hdod0HNkDC4UWLN9glCu2FlvndpfQm-c94ozfWGgaiIYy2wrfSW1UGJCJJfMRufQ/exec';
+  var PANEL_IDS = ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 'lab', 'submit', 'end'];
+  var completed = {};
+  var progress = { quizzes: {}, labs: {}, checkpoints: {} };
+
+  function markLab(id) {
+    progress.labs[id] = { done: true, at: new Date().toISOString() };
+    updateMissionUI();
+  }
+
+  function countQuizzesAnswered() {
+    var n = 0;
+    Object.keys(progress.quizzes).forEach(function (k) { if (progress.quizzes[k].answered) n++; });
+    return n;
+  }
+
+  function countQuizzesCorrect() {
+    var n = 0;
+    Object.keys(progress.quizzes).forEach(function (k) { if (progress.quizzes[k].correct) n++; });
+    return n;
+  }
+
+  function getCheckpointText(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  var MISSION_DEFS = [
+    { id: 'name', label: '이름 입력', test: function () { return !!(document.getElementById('studentName').value || '').trim(); } },
+    { id: 'quiz8', label: '퀴즈 8개 이상 풀기 (전체 9문항)', test: function () { return countQuizzesAnswered() >= 8; } },
+    { id: 'quiz6ok', label: '퀴즈 6개 이상 정답', test: function () { return countQuizzesCorrect() >= 6; } },
+    { id: 'cp_s1', label: '§1 소감 20자 이상', test: function () { return getCheckpointText('cp_s1').length >= 20; } },
+    { id: 'cp_s4', label: '§4 캐시 소감 20자 이상', test: function () { return getCheckpointText('cp_s4').length >= 20; } },
+    { id: 'cp_lab', label: '실습 소감 30자 이상', test: function () { return getCheckpointText('cp_lab').length >= 30; } },
+    { id: 'lab_cache', label: '캐시 실습 「예시 실행」', test: function () { return progress.labs.cache_preset && progress.labs.cache_preset.done; } },
+    { id: 'lab_part', label: '주기억 「적재하기」 1회', test: function () { return progress.labs.partition && progress.labs.partition.done; } },
+    { id: 'lab_hit', label: '적중률 「계산」 버튼', test: function () { return progress.labs.hit_calc && progress.labs.hit_calc.done; } },
+    { id: 'summary', label: '한 줄 요약 20자 이상', test: function () { return getCheckpointText('reflectSummary').length >= 20; } }
+  ];
+
+  function updateMissionUI() {
+    var list = document.getElementById('missionList');
+    if (!list) return;
+    var doneCount = 0;
+    list.innerHTML = '';
+    MISSION_DEFS.forEach(function (m) {
+      var ok = m.test();
+      if (ok) doneCount++;
+      var li = document.createElement('li');
+      li.className = ok ? 'done' : 'pending';
+      li.innerHTML = '<span class="mission-check">' + (ok ? '✓' : '') + '</span><span>' + m.label + '</span>';
+      list.appendChild(li);
+    });
+    var total = MISSION_DEFS.length;
+    var pct = Math.round((doneCount / total) * 100);
+    var mFill = document.getElementById('missionProgressFill');
+    var mText = document.getElementById('missionProgressText');
+    if (mFill) mFill.style.width = pct + '%';
+    if (mText) mText.textContent = doneCount + ' / ' + total + ' 완료';
+    ['cp_s1', 'cp_s4', 'cp_lab'].forEach(function (id) {
+      var el = document.getElementById(id + '_done');
+      var len = getCheckpointText(id).length;
+      var need = id === 'cp_lab' ? 30 : 20;
+      if (el) el.textContent = len >= need ? '✅ 글자 수 충족 (' + len + '자)' : '현재 ' + len + '자 / ' + need + '자 필요';
+    });
+    var btn = document.getElementById('btnSubmitTeacher');
+    if (btn) btn.disabled = doneCount < total;
+    var status = document.getElementById('submitStatus');
+    if (status && doneCount < total) {
+      status.textContent = '미션 ' + (total - doneCount) + '개 남았어요. 위 체크리스트를 채워 주세요!';
+      status.style.color = '#b45309';
+    }
+  }
+
+  function initCheckpointWatch() {
+    ['cp_s1', 'cp_s4', 'cp_lab', 'reflectSummary', 'reflectQuestion'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', updateMissionUI);
+    });
+    var nameEl = document.getElementById('studentName');
+    var classEl = document.getElementById('studentClass');
+    if (nameEl) {
+      nameEl.addEventListener('input', updateMissionUI);
+      try {
+        var saved = localStorage.getItem('cs4_studentName');
+        if (saved) nameEl.value = saved;
+      } catch (e) {}
+      nameEl.addEventListener('change', function () {
+        try { localStorage.setItem('cs4_studentName', nameEl.value); } catch (e) {}
+      });
+    }
+    if (classEl) {
+      try {
+        var sc = localStorage.getItem('cs4_studentClass');
+        if (sc) classEl.value = sc;
+      } catch (e) {}
+      classEl.addEventListener('change', function () {
+        try { localStorage.setItem('cs4_studentClass', classEl.value); } catch (e) {}
+      });
+    }
+  }
+
+  function assignQuizIds() {
+    document.querySelectorAll('.quiz-item').forEach(function (item, idx) {
+      if (!item.getAttribute('data-quiz-id')) item.setAttribute('data-quiz-id', 'q' + (idx + 1));
+    });
+  }
+
+  function collectSubmissionPayload() {
+    var quizExport = {};
+    Object.keys(progress.quizzes).forEach(function (k) {
+      quizExport[k] = progress.quizzes[k];
+    });
+    return {
+      pageType: 'cs_4_memory_unit',
+      studentName: (document.getElementById('studentName').value || '').trim(),
+      studentClass: (document.getElementById('studentClass').value || '').trim(),
+      quizzes: quizExport,
+      quizAnswered: countQuizzesAnswered(),
+      quizCorrect: countQuizzesCorrect(),
+      labs: progress.labs,
+      checkpoints: {
+        s1: getCheckpointText('cp_s1'),
+        s4: getCheckpointText('cp_s4'),
+        lab: getCheckpointText('cp_lab')
+      },
+      reflections: {
+        summary: getCheckpointText('reflectSummary'),
+        hardest: getCheckpointText('reflectQuestion')
+      },
+      cacheStats: {
+        hits: typeof cacheHits !== 'undefined' ? cacheHits : 0,
+        misses: typeof cacheMiss !== 'undefined' ? cacheMiss : 0
+      },
+      missionsCompleted: MISSION_DEFS.filter(function (m) { return m.test(); }).map(function (m) { return m.id; }),
+      submittedAt: new Date().toISOString(),
+      pageUrl: window.location.href
+    };
+  }
+
+  function isSubmitUrlConfigured() {
+    return GOOGLE_SUBMIT_URL && GOOGLE_SUBMIT_URL.indexOf('http') === 0;
+  }
+
+  var _submitWait = null;
+
+  function installGoogleSubmitListener() {
+    if (window._submitListenerInstalled) return;
+    window._submitListenerInstalled = true;
+    window.addEventListener('message', function (ev) {
+      if (!ev.data || typeof ev.data.submitOk === 'undefined') return;
+      if (!_submitWait) return;
+      var cb = _submitWait;
+      _submitWait = null;
+      clearTimeout(cb.timer);
+      if (ev.data.submitOk) cb.onOk(ev.data);
+      else cb.onFail(ev.data);
+    });
+  }
+
+  function postPayloadToGoogle(payload, callbacks) {
+    installGoogleSubmitListener();
+    if (_submitWait) {
+      alert('이전 제출이 처리 중이에요. 잠시만 기다려 주세요.');
+      return;
+    }
+    var timer = setTimeout(function () {
+      if (_submitWait) {
+        _submitWait = null;
+        if (callbacks.onTimeout) callbacks.onTimeout();
+      }
+    }, 20000);
+    _submitWait = { onOk: callbacks.onOk, onFail: callbacks.onFail, timer: timer };
+
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = GOOGLE_SUBMIT_URL;
+    form.target = 'googleSubmitFrame';
+    form.acceptCharset = 'UTF-8';
+    form.style.display = 'none';
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(function () {
+      if (form.parentNode) form.parentNode.removeChild(form);
+    }, 2000);
+  }
+
+  window.submitToTeacher = function () {
+    var statusEl = document.getElementById('submitStatus');
+    var btn = document.getElementById('btnSubmitTeacher');
+    if (!isSubmitUrlConfigured()) {
+      alert('제출 주소가 연결되지 않았어요. 선생님께 문의해 주세요.');
+      return;
+    }
+    var incomplete = MISSION_DEFS.filter(function (m) { return !m.test(); });
+    if (incomplete.length) {
+      alert('아직 미션이 ' + incomplete.length + '개 남았어요.\n체크리스트를 확인해 주세요!');
+      updateMissionUI();
+      return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = '제출 중…'; }
+    if (statusEl) statusEl.textContent = '서버에 저장하는 중…';
+
+    var payload = collectSubmissionPayload();
+
+    postPayloadToGoogle(payload, {
+      onOk: function () {
+        if (btn) {
+          btn.textContent = '제출 완료 ✓';
+          setTimeout(function () {
+            btn.disabled = false;
+            btn.textContent = '선생님께 제출하기';
+            updateMissionUI();
+          }, 5000);
+        }
+        if (statusEl) {
+          statusEl.textContent = '제출 완료! 시트 「제출_통합」 탭을 확인하세요.';
+          statusEl.style.color = '#166534';
+        }
+        alert('제출 완료!\n이름: ' + payload.studentName + '\n퀴즈: ' + payload.quizCorrect + '/' + payload.quizAnswered);
+      },
+      onFail: function (res) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '선생님께 제출하기';
+        }
+        if (statusEl) statusEl.textContent = '';
+        alert('저장 실패: ' + (res.error || '알 수 없음'));
+      },
+      onTimeout: function () {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '선생님께 제출하기';
+        }
+        alert('응답이 늦어요. 시트 「제출_통합」「수신로그」를 선생님이 확인해 주세요.');
+      }
+    });
+  };
+
+  function setPanelOpen(panel, open) {
+    if (!panel) return;
+    panel.classList.toggle('is-open', open);
+    var trigger = panel.querySelector('.accordion-trigger');
+    var bodyId = trigger && trigger.getAttribute('aria-controls');
+    var body = bodyId && document.getElementById(bodyId);
+    if (trigger) trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (body) body.setAttribute('aria-hidden', open ? 'false' : 'true');
+  }
+
+  function syncNavActive() {
+    document.querySelectorAll('nav.main-nav a[data-panel]').forEach(function (a) {
+      var pid = a.getAttribute('data-panel');
+      var panel = document.getElementById(pid);
+      a.classList.toggle('is-active', panel && panel.classList.contains('is-open'));
+    });
+  }
+
+  function updateProgress() {
+    var n = PANEL_IDS.filter(function (id) { return completed[id]; }).length;
+    var pct = (n / PANEL_IDS.length) * 100;
+    var fill = document.getElementById('progressFill');
+    var text = document.getElementById('progressText');
+    if (fill) fill.style.width = pct + '%';
+    if (text) text.textContent = n + ' / ' + PANEL_IDS.length + ' 탐험';
+  }
+
+  function markComplete(id) {
+    if (PANEL_IDS.indexOf(id) === -1) return;
+    completed[id] = true;
+    updateProgress();
+  }
+
+  window.openPanel = function (id, scroll) {
+    var panel = document.getElementById(id);
+    if (panel) setPanelOpen(panel, true);
+    syncNavActive();
+    if (scroll && panel) {
+      setTimeout(function () {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    }
+  };
+
+  function initAccordion() {
+    document.querySelectorAll('.accordion-panel').forEach(function (panel) {
+      var id = panel.id;
+      if (id !== 's0') setPanelOpen(panel, false);
+
+      var trigger = panel.querySelector('.accordion-trigger');
+      if (!trigger) return;
+      trigger.addEventListener('click', function () {
+        var isOpen = panel.classList.contains('is-open');
+        setPanelOpen(panel, !isOpen);
+        syncNavActive();
+        if (!isOpen) markComplete(id);
+      });
+    });
+
+    document.querySelectorAll('nav.main-nav a[data-panel]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var id = a.getAttribute('data-panel');
+        var panel = document.getElementById(id);
+        if (panel && !panel.classList.contains('is-open')) {
+          window.openPanel(id, true);
+          markComplete(id);
+        } else if (panel) {
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  }
+
+  function initQuizzes() {
+    assignQuizIds();
+    document.querySelectorAll('.quiz-item').forEach(function (item) {
+      var answer = item.getAttribute('data-answer');
+      var qid = item.getAttribute('data-quiz-id');
+      var feedback = item.querySelector('.quiz-feedback');
+      item.querySelectorAll('.quiz-opt').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (item.classList.contains('answered')) return;
+          var val = btn.getAttribute('data-val');
+          var correct = val === answer;
+          item.querySelectorAll('.quiz-opt').forEach(function (b) {
+            b.disabled = true;
+            if (b.getAttribute('data-val') === answer) b.classList.add('correct');
+            else if (b === btn) b.classList.add('wrong');
+          });
+          item.classList.add('answered');
+          progress.quizzes[qid] = { answered: true, correct: correct, chosen: val, at: new Date().toISOString() };
+          updateMissionUI();
+          if (feedback) {
+            feedback.textContent = correct
+              ? '🎉 정답! 제출 미션에 반영됐어요.'
+              : '💡 틀렸어요. 위 내용을 다시 읽고 「다시 풀기」를 눌러 보세요.';
+            feedback.style.color = correct ? '#166534' : '#b45309';
+            if (!correct) {
+              var retry = document.createElement('button');
+              retry.type = 'button';
+              retry.className = 'quiz-opt';
+              retry.style.marginTop = '0.5rem';
+              retry.textContent = '다시 풀기';
+              retry.addEventListener('click', function () {
+                item.classList.remove('answered');
+                delete progress.quizzes[qid];
+                updateMissionUI();
+                item.querySelectorAll('.quiz-opt').forEach(function (b) {
+                  b.disabled = false;
+                  b.classList.remove('correct', 'wrong');
+                });
+                if (retry.parentNode) retry.parentNode.removeChild(retry);
+                feedback.textContent = '';
+              });
+              feedback.appendChild(document.createElement('br'));
+              feedback.appendChild(retry);
+            }
+          }
+          var panel = item.closest('.accordion-panel');
+          if (panel && panel.id) markComplete(panel.id);
+        });
+      });
+    });
+  }
+
+  function initHitSlider() {
+    var slider = document.getElementById('hitSlider');
+    if (!slider) return;
+    function update() {
+      var h = parseInt(slider.value, 10) / 100;
+      var tCache = 50;
+      var tMain = 400;
+      var avg = Math.round(h * tCache + (1 - h) * tMain);
+      document.getElementById('hitLabel').textContent = '적중률 ' + slider.value + '%';
+      document.getElementById('avgTime').textContent = avg;
+      var bar = document.getElementById('speedBar');
+      if (bar) bar.style.width = Math.max(10, 100 - (avg - 50) / 3.5) + '%';
+    }
+    slider.addEventListener('input', update);
+    update();
+  }
+
+  /* ── 실습: 주기억 분할 ── */
+  var PART_TOTAL = 256;
+  var PART_OS = 64;
+  var partBlocks = [];
+
+  function partitionReset() {
+    partBlocks = [
+      { type: 'os', size: PART_OS, name: 'OS' },
+      { type: 'free', size: PART_TOTAL - PART_OS, name: '' }
+    ];
+    renderPartBar();
+    document.getElementById('partMsg').textContent = '초기화: OS 64칸 + 빈 칸 192칸.';
+  }
+
+  function renderPartBar() {
+    var bar = document.getElementById('partBar');
+    if (!bar) return;
+    bar.innerHTML = '';
+    partBlocks.forEach(function (b) {
+      var el = document.createElement('div');
+      el.className = 'mem-seg ' + (b.type === 'os' ? 'os' : b.type === 'free' ? 'free' : 'used');
+      el.style.flex = b.size;
+      el.title = (b.name || '빈칸') + ' (' + b.size + ')';
+      el.textContent = b.size >= 18 ? (b.name || '') : '';
+      bar.appendChild(el);
+    });
+  }
+
+  function partitionFindHole(size, algo) {
+    var holes = [];
+    for (var i = 0; i < partBlocks.length; i++) {
+      if (partBlocks[i].type === 'free' && partBlocks[i].size >= size) {
+        holes.push({ i: i, size: partBlocks[i].size });
+      }
+    }
+    if (!holes.length) return -1;
+    if (algo === 'first') return holes[0].i;
+    if (algo === 'best') {
+      var best = holes[0];
+      holes.forEach(function (h) { if (h.size < best.size) best = h; });
+      return best.i;
+    }
+    if (algo === 'worst') {
+      var worst = holes[0];
+      holes.forEach(function (h) { if (h.size > worst.size) worst = h; });
+      return worst.i;
+    }
+    return holes[0].i;
+  }
+
+  window.partitionAllocate = function () {
+    var name = (document.getElementById('partName').value || 'P').trim();
+    var size = parseInt(document.getElementById('partSize').value, 10) || 0;
+    var algo = document.getElementById('partAlgo').value;
+    var msg = document.getElementById('partMsg');
+    if (size < 5) { msg.textContent = '크기는 5칸 이상으로 해 주세요.'; return; }
+    var hi = partitionFindHole(size, algo);
+    if (hi < 0) { msg.textContent = '❌ 들어갈 빈 칸이 없어요! 기억 집약을 해 보세요.'; return; }
+    var hole = partBlocks[hi];
+    var remain = hole.size - size;
+    var prog = { type: 'used', size: size, name: name };
+    if (remain > 0) {
+      partBlocks.splice(hi, 1, prog, { type: 'free', size: remain, name: '' });
+    } else {
+      partBlocks[hi] = prog;
+    }
+    renderPartBar();
+    var algoKr = { first: '최초 적합', best: '최적 적합', worst: '최악 적합' }[algo];
+    msg.textContent = '✅ ' + algoKr + '으로 「' + name + '」 ' + size + '칸 적재!';
+    markLab('partition');
+  };
+
+  window.partitionCompact = function () {
+    var used = partBlocks.filter(function (b) { return b.type !== 'free'; });
+    var freeTotal = PART_TOTAL - used.reduce(function (s, b) { return s + b.size; }, 0);
+    partBlocks = used;
+    if (freeTotal > 0) partBlocks.push({ type: 'free', size: freeTotal, name: '' });
+    renderPartBar();
+    document.getElementById('partMsg').textContent = '기억 집약 완료! 빈 칸이 오른쪽(끝)으로 모였어요.';
+  };
+
+  /* ── 직접 사상 ── */
+  window.calcDirectMap = function () {
+    var j = parseInt(document.getElementById('mapJ').value, 10) || 0;
+    var m = parseInt(document.getElementById('mapM').value, 10) || 8;
+    var i = ((j % m) + m) % m;
+    document.getElementById('mapResult').innerHTML =
+      '슬롯 번호 <strong>i = j mod m = ' + j + ' mod ' + m + ' = ' + i + '</strong>';
+    markLab('direct_map');
+  };
+
+  window.calcHddAccess = function () {
+    var s = parseFloat(document.getElementById('hddSeek').value) || 0;
+    var r = parseFloat(document.getElementById('hddRot').value) || 0;
+    var t = parseFloat(document.getElementById('hddXfer').value) || 0;
+    var sum = (s + r + t).toFixed(2);
+    document.getElementById('hddResult').innerHTML =
+      '총 접근 시간 = ' + s + ' + ' + r + ' + ' + t + ' = <strong>' + sum + ' ms</strong>';
+  };
+
+  window.calcChipExpand = function () {
+    var n = parseInt(document.getElementById('chipCount').value, 10) || 4;
+    var b = parseInt(document.getElementById('chipBits').value, 10) || 8;
+    var row = document.getElementById('chipRow');
+    row.innerHTML = '';
+    for (var c = 0; c < n; c++) {
+      var d = document.createElement('div');
+      d.className = 'chip';
+      d.textContent = b + 'bit';
+      row.appendChild(d);
+    }
+    document.getElementById('chipBusLabel').textContent =
+      '→ 데이터 버스 ' + (n * b) + '비트 (한 번에 ' + (n * b / 8) + '바이트)';
+  };
+
+  /* ── 캐시 시뮬 ── */
+  var CACHE_M = 8;
+  var cacheData = [];
+  var cacheHits = 0;
+  var cacheMiss = 0;
+
+  function cacheRenderSlots(highlightIdx, flash) {
+    var wrap = document.getElementById('cacheSlots');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    for (var s = 0; s < CACHE_M; s++) {
+      var d = document.createElement('div');
+      var val = cacheData[s];
+      d.className = 'cache-slot' + (val === undefined ? ' empty' : '');
+      if (s === highlightIdx && flash === 'hit') d.className += ' hit-flash';
+      if (s === highlightIdx && flash === 'miss') d.className += ' miss-flash';
+      d.innerHTML = '<div class="slot-num">슬롯' + s + '</div><div class="slot-val">' + (val === undefined ? '비어 있음' : '블록 ' + val) + '</div>';
+      wrap.appendChild(d);
+    }
+    document.getElementById('cacheStatHits').textContent = '적중 ' + cacheHits;
+    document.getElementById('cacheStatMiss').textContent = '실패 ' + cacheMiss;
+    var total = cacheHits + cacheMiss;
+    document.getElementById('cacheStatRate').textContent =
+      '적중률 ' + (total ? Math.round((cacheHits / total) * 100) : 0) + '%';
+  }
+
+  function cacheLogLine(html) {
+    var log = document.getElementById('cacheLog');
+    if (!log) return;
+    log.innerHTML += '\n' + html;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  window.cacheReset = function () {
+    cacheData = [];
+    cacheHits = 0;
+    cacheMiss = 0;
+    var log = document.getElementById('cacheLog');
+    if (log) log.textContent = '[시작] 캐시 ' + CACHE_M + '슬롯, 비어 있음';
+    cacheRenderSlots(-1, null);
+  };
+
+  window.cacheRequest = function (block) {
+    if (block === undefined) block = parseInt(document.getElementById('cacheBlockIn').value, 10) || 0;
+    var slot = ((block % CACHE_M) + CACHE_M) % CACHE_M;
+    var hit = cacheData[slot] === block;
+    if (hit) {
+      cacheHits++;
+      cacheLogLine('<span class="hit">[적중]</span> 블록 ' + block + ' → 슬롯 ' + slot + ' 에 이미 있음!');
+    } else {
+      cacheMiss++;
+      cacheData[slot] = block;
+      cacheLogLine('<span class="miss">[실패]</span> 블록 ' + block + ' → 슬롯 ' + slot + ' 에 주기억에서 가져옴');
+    }
+    cacheRenderSlots(slot, hit ? 'hit' : 'miss');
+  };
+
+  window.cacheRunPreset = function () {
+    cacheReset();
+    [5, 5, 13, 5, 21, 5, 13, 13].forEach(function (b, i) {
+      setTimeout(function () { cacheRequest(b); }, i * 600);
+    });
+    setTimeout(function () { markLab('cache_preset'); }, 5200);
+  };
+
+  /* ── 적중률 계산기 ── */
+  window.calcHitFormula = function () {
+    var H = parseFloat(document.getElementById('calcH').value) / 100;
+    var Tc = parseFloat(document.getElementById('calcTc').value);
+    var Tm = parseFloat(document.getElementById('calcTm').value);
+    var avg = H * Tc + (1 - H) * Tm;
+    document.getElementById('calcHitResult').innerHTML =
+      'T<sub>평균</sub> = ' + (H * 100).toFixed(0) + '%×' + Tc + ' + ' + ((1 - H) * 100).toFixed(0) + '%×' + Tm +
+      ' = <strong>' + avg.toFixed(1) + ' ns</strong>';
+    var tbody = document.getElementById('calcHitTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    [70, 80, 90, 95, 99].forEach(function (p) {
+      var h = p / 100;
+      var a = Math.round(h * Tc + (1 - h) * Tm);
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + p + '%</td><td>' + a + ' ns</td>';
+      tbody.appendChild(tr);
+    });
+    markLab('hit_calc');
+  };
+
+  /* ── 사상 비교 · 교체 ── */
+  window.compareMapping = function () {
+    var j = parseInt(document.getElementById('cmpJ').value, 10) || 0;
+    var m = parseInt(document.getElementById('cmpM').value, 10) || 4;
+    var v = parseInt(document.getElementById('cmpV').value, 10) || 2;
+    var direct = ((j % m) + m) % m;
+    var setIdx = ((j % v) + v) % v;
+    document.getElementById('cmpMapResult').innerHTML =
+      '<strong>직접 사상</strong>: 블록 ' + j + ' → 슬롯 ' + direct + ' (i = j mod ' + m + ')<br>' +
+      '<strong>집합 연관</strong>: 블록 ' + j + ' → 집합 ' + setIdx + ' (i = j mod ' + v + ') 안에서 슬롯 선택<br>' +
+      '<strong>연관 사상</strong>: 어느 슬롯이든 가능 (가장 유연, 비용 ↑)';
+  };
+
+  var replaceState = { blocks: [], lruOrder: [], fifoQueue: [] };
+
+  function replaceRender() {
+    var wrap = document.getElementById('replaceSlots');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    for (var i = 0; i < 4; i++) {
+      var d = document.createElement('div');
+      d.className = 'cache-slot';
+      d.innerHTML = '<div class="slot-num">칸' + i + '</div><div class="slot-val">' + (replaceState.blocks[i] != null ? 'B' + replaceState.blocks[i] : '-') + '</div>';
+      wrap.appendChild(d);
+    }
+  }
+
+  window.replaceInit = function () {
+    replaceState.blocks = [1, 2, 3, 4];
+    replaceState.lruOrder = [1, 2, 3, 4];
+    replaceState.fifoQueue = [1, 2, 3, 4];
+    replaceRender();
+    document.getElementById('replaceLog').textContent = '[준비] 4칸 모두 찼음. 새 블록 9 요청 시 교체 알고리즘 실행';
+  };
+
+  window.replaceStep = function (algo) {
+    if (replaceState.blocks.indexOf(9) >= 0) {
+      document.getElementById('replaceLog').textContent = '이미 블록 9가 있어요.';
+      return;
+    }
+    var victim;
+    if (algo === 'lru') {
+      victim = replaceState.lruOrder[0];
+      replaceState.lruOrder.shift();
+      replaceState.lruOrder.push(9);
+    } else if (algo === 'fifo') {
+      victim = replaceState.fifoQueue.shift();
+      replaceState.fifoQueue.push(9);
+    } else {
+      var idx = Math.floor(Math.random() * 4);
+      victim = replaceState.blocks[idx];
+    }
+    var vi = replaceState.blocks.indexOf(victim);
+    replaceState.blocks[vi] = 9;
+    if (algo !== 'lru') replaceState.lruOrder = replaceState.blocks.slice();
+    replaceRender();
+    var names = { lru: 'LRU(가장 오래 안 쓴)', fifo: 'FIFO(가장 먼저 들어온)', random: 'Random(임의)' };
+    document.getElementById('replaceLog').textContent =
+      names[algo] + ' → 블록 ' + victim + ' 퇴출, 블록 9 적재 (슬롯 ' + vi + ')';
+  };
+
+  /* ── 지역성 ── */
+  window.localityRun = function (mode) {
+    cacheReset();
+    var seq = [];
+    if (mode === 'seq') for (var i = 0; i < 10; i++) seq.push(i);
+    else if (mode === 'repeat') for (var r = 0; r < 10; r++) seq.push(2);
+    else for (var x = 0; x < 10; x++) seq.push(Math.floor(Math.random() * 16));
+    var log = document.getElementById('localityLog');
+    log.textContent = '[' + mode + '] 요청: ' + seq.join(' → ');
+    seq.forEach(function (b) { cacheRequest(b); });
+    var total = cacheHits + cacheMiss;
+    document.getElementById('localityStats').innerHTML =
+      '<span class="stat-pill">적중률 ' + Math.round((cacheHits / total) * 100) + '%</span>' +
+      '<span class="stat-pill">적중 ' + cacheHits + ' / 실패 ' + cacheMiss + '</span>';
+    markLab('locality');
+  };
+
+  function initLabTabs() {
+    document.querySelectorAll('.lab-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var id = tab.getAttribute('data-lab');
+        document.querySelectorAll('.lab-tab').forEach(function (t) { t.classList.remove('is-active'); });
+        document.querySelectorAll('.lab-panel').forEach(function (p) { p.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        var panel = document.getElementById('lab-' + id);
+        if (panel) panel.classList.add('is-active');
+      });
+    });
+  }
+
+  function boot() {
+    initAccordion();
+    initQuizzes();
+    initHitSlider();
+    initLabTabs();
+    initCheckpointWatch();
+    partitionReset();
+    cacheReset();
+    calcHddAccess();
+    calcChipExpand();
+    updateMissionUI();
+    markComplete('s0');
+    updateProgress();
+    syncNavActive();
+    installGoogleSubmitListener();
+    var subBtn = document.getElementById('btnSubmitTeacher');
+    if (subBtn) subBtn.addEventListener('click', submitToTeacher);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+</body>
+</html>
