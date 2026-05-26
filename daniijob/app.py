@@ -9,6 +9,8 @@ HTML은 iframe(components.html)으로 띄워 JS·CSS가 정상 동작합니다.
 """
 from __future__ import annotations
 
+import base64
+import mimetypes
 import os
 import re
 from pathlib import Path
@@ -101,10 +103,27 @@ def inject_submit_url(html: str, url: str) -> str:
     return html
 
 
-def read_page_html(paths: list[Path]) -> str:
+IMG_SRC_RE = re.compile(r'<img\s([^>]*?)src="(images/[^"]+)"', re.IGNORECASE)
+
+
+def _to_data_uri(html_dir: Path, html: str) -> str:
+    """HTML 내 상대 경로 이미지를 base64 data URI로 치환 (iframe용)."""
+    def _replace(m: re.Match) -> str:
+        prefix = m.group(1)
+        rel = m.group(2)
+        img_path = html_dir / rel
+        if not img_path.is_file():
+            return m.group(0)
+        mime = mimetypes.guess_type(str(img_path))[0] or "image/png"
+        b64 = base64.b64encode(img_path.read_bytes()).decode("ascii")
+        return f'<img {prefix}src="data:{mime};base64,{b64}"'
+    return IMG_SRC_RE.sub(_replace, html)
+
+
+def read_page_html(paths: list[Path]) -> tuple[str, Path]:
     for path in paths:
         if path.is_file():
-            return path.read_text(encoding="utf-8")
+            return path.read_text(encoding="utf-8"), path.parent
     names = ", ".join(str(p.relative_to(ROOT)) for p in paths)
     raise FileNotFoundError(f"HTML 파일을 찾을 수 없습니다: {names}")
 
@@ -114,8 +133,9 @@ def load_html(page_key: str, submit_url: str) -> str:
     if page_key not in PAGES:
         raise ValueError(f"알 수 없는 페이지: {page_key}")
 
-    text = read_page_html(PAGES[page_key]["paths"])
+    text, html_dir = read_page_html(PAGES[page_key]["paths"])
     text = inject_submit_url(text, submit_url)
+    text = _to_data_uri(html_dir, text)
 
     if IFRAME_RESIZE_SNIPPET.strip() not in text:
         if "</body>" in text:
