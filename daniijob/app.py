@@ -8,8 +8,6 @@ HTML은 iframe(components.html)으로 띄워 JS·CSS가 정상 동작합니다.
 """
 from __future__ import annotations
 
-import base64
-import mimetypes
 import os
 import re
 from pathlib import Path
@@ -62,7 +60,6 @@ RESIZE_JS = """
 </script>
 """
 
-_IMG_RE = re.compile(r'(<img\s[^>]*?)src="(images/[^"]+)"', re.I)
 _SUBMIT_RE = re.compile(
     r"var GOOGLE_SUBMIT_URL\s*=\s*'(https://script\.google\.com/macros/s/[^']+)'"
 )
@@ -78,26 +75,6 @@ def _get_submit_url() -> str:
     return os.environ.get("GOOGLE_SUBMIT_URL", "").strip() or DEFAULT_GOOGLE_SUBMIT_URL
 
 
-def _embed_images(html: str, html_dir: Path) -> str:
-    """상대 경로 이미지를 base64 data URI로 치환."""
-    def _repl(m: re.Match) -> str:
-        prefix, rel = m.group(1), m.group(2)
-        img_path = html_dir / rel
-        if not img_path.is_file():
-            return m.group(0)
-        mime = mimetypes.guess_type(img_path.name)[0] or "image/png"
-        b64 = base64.b64encode(img_path.read_bytes()).decode()
-        return f'{prefix}src="data:{mime};base64,{b64}"'
-    return _IMG_RE.sub(_repl, html)
-
-
-def _inject_submit_url(html: str, url: str) -> str:
-    if "PASTE_WEB_APP_URL_HERE" in html:
-        html = html.replace("'PASTE_WEB_APP_URL_HERE'", f"'{url}'", 1)
-    html = _SUBMIT_RE.sub(f"var GOOGLE_SUBMIT_URL = '{url}'", html, count=1)
-    return html
-
-
 def _prepare_html(page_key: str) -> str:
     info = PAGES[page_key]
     html_path = ASSETS / info["file"]
@@ -105,8 +82,11 @@ def _prepare_html(page_key: str) -> str:
         raise FileNotFoundError(f"{info['file']}을 찾을 수 없습니다.")
 
     html = html_path.read_text(encoding="utf-8")
-    html = _inject_submit_url(html, _get_submit_url())
-    html = _embed_images(html, ASSETS)
+
+    url = _get_submit_url()
+    if "PASTE_WEB_APP_URL_HERE" in html:
+        html = html.replace("'PASTE_WEB_APP_URL_HERE'", f"'{url}'", 1)
+    html = _SUBMIT_RE.sub(f"var GOOGLE_SUBMIT_URL = '{url}'", html, count=1)
 
     if "streamlit:setFrameHeight" not in html:
         if "</body>" in html:
