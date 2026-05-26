@@ -620,7 +620,7 @@
 
 <header class="hero">
   <div class="hero-content">
-    <span class="hero-badge">컴퓨터 구조 · 4단원</span>
+    <span class="hero-badge" style="display:inline-flex;align-items:center;gap:0.4rem">🏫 조대부고 2학년 · 컴퓨터 구조 4단원 <span style="background:#ec4899;color:#fff;padding:0.1rem 0.5rem;border-radius:12px;font-size:0.7rem;letter-spacing:1px">ptp 💜</span></span>
     <h1>메모리 탐험대<br>CPU의 비밀 창고를 열어라</h1>
     <p class="hero-lead">기억 장치를 하나의 모험으로! 쉬운 말과 비유로 배워요.</p>
     <div class="hero-story">
@@ -854,7 +854,18 @@
 
         <div class="block-lab" id="inline-lab-partition">
           <h3>🧪 미니 실습 — 주기억 분할·할당</h3>
-          <p class="lab-desc">주기억에 프로그램을 넣어 보세요. 빈 공간(홀)이 여러 개일 때 할당 방식(최초/최적/최악 적합)에 따라 결과가 달라져요.</p>
+          <p class="lab-desc">주기억에 프로그램을 넣어 보세요. 빈 공간(홀)이 여러 개일 때 할당 방식에 따라 결과가 달라져요.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.5rem;margin:0.5rem 0 0.75rem;font-size:0.82rem">
+            <div style="background:#e0f2fe;border-radius:8px;padding:0.5rem 0.6rem;border-left:3px solid #0ea5e9">
+              <strong>최초 적합</strong><br>처음 만난 빈 공간에 바로 넣기<br><span style="color:#0369a1">⚡ 빠름, 앞쪽에 몰림</span>
+            </div>
+            <div style="background:#f0fdf4;border-radius:8px;padding:0.5rem 0.6rem;border-left:3px solid #22c55e">
+              <strong>최적 적합</strong><br>딱 맞는 가장 작은 빈 공간에 넣기<br><span style="color:#15803d">🎯 낭비↓, 아주 작은 조각 생김</span>
+            </div>
+            <div style="background:#fef3c7;border-radius:8px;padding:0.5rem 0.6rem;border-left:3px solid #f59e0b">
+              <strong>최악 적합</strong><br>가장 큰 빈 공간에 넣기<br><span style="color:#b45309">📦 남은 조각이 커서 재활용 가능</span>
+            </div>
+          </div>
           <div class="lab-row" style="flex-wrap:wrap">
             <div class="lab-field">
               <label>예제 시나리오</label>
@@ -1622,8 +1633,11 @@
 </main>
 
 <footer class="site-footer">
-  <p>컴퓨터 구조 4단원 · 기억 장치 (IT CookBook 컴퓨터 구조와 원리 3.0 ch07~09 기반)</p>
-  <p style="margin-top:0.35rem">정보 · 컴퓨터 구조</p>
+  <p style="font-size:0.95rem;font-weight:600">컴퓨터 구조 4단원 · 기억 장치</p>
+  <p style="margin-top:0.4rem;font-size:0.85rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;flex-wrap:wrap">
+    <span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:0.2rem 0.7rem;border-radius:20px;font-size:0.8rem">🏫 조대부고 2학년</span>
+    <span style="background:linear-gradient(135deg,#ec4899,#f472b6);color:#fff;padding:0.2rem 0.7rem;border-radius:20px;font-size:0.8rem;letter-spacing:1px">💜 ptp</span>
+  </p>
 </footer>
 
 <script>
@@ -2089,7 +2103,7 @@
     partitionReset();
   };
 
-  function partitionReset() {
+  window.partitionReset = function partitionReset() {
     var sel = document.getElementById('partPreset');
     var preset = sel ? sel.value : 'basic';
     if (preset === 'custom') {
@@ -2105,7 +2119,7 @@
     var freeTotal = partBlocks.filter(function(b){return b.type==='free'}).reduce(function(s,b){return s+b.size},0);
     var holeCount = partBlocks.filter(function(b){return b.type==='free'}).length;
     document.getElementById('partMsg').textContent = '초기화: 총 ' + PART_TOTAL + '칸, 빈 홀 ' + holeCount + '개 (합계 ' + freeTotal + '칸)';
-  }
+  };
 
   function renderPartBar() {
     var bar = document.getElementById('partBar');
