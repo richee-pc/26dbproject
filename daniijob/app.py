@@ -24,18 +24,8 @@ DEFAULT_GOOGLE_SUBMIT_URL = (
 )
 
 PAGES = {
-    "dbproject": {
-        "title": "자료구조 프로젝트",
-        "subtitle": "수행평가 헬프데스크",
-        "icon": "📦",
-        "file": "dbproject.html",
-    },
-    "cs4": {
-        "title": "컴퓨터 구조 4단원",
-        "subtitle": "메모리 탐험대",
-        "icon": "🧠",
-        "file": "cs_4.html",
-    },
+    "📦 자료구조 프로젝트": "dbproject.html",
+    "🧠 컴퓨터 구조 4단원": "cs_4.html",
 }
 
 RESIZE_JS = """
@@ -75,11 +65,10 @@ def _get_submit_url() -> str:
     return os.environ.get("GOOGLE_SUBMIT_URL", "").strip() or DEFAULT_GOOGLE_SUBMIT_URL
 
 
-def _prepare_html(page_key: str) -> str:
-    info = PAGES[page_key]
-    html_path = ASSETS / info["file"]
+def _prepare_html(filename: str) -> str:
+    html_path = ASSETS / filename
     if not html_path.is_file():
-        raise FileNotFoundError(f"{info['file']}을 찾을 수 없습니다.")
+        raise FileNotFoundError(f"{filename}을 찾을 수 없습니다.")
 
     html = html_path.read_text(encoding="utf-8")
 
@@ -101,33 +90,29 @@ def main() -> None:
         page_title="학습 헬프데스크",
         page_icon="📚",
         layout="wide",
-        initial_sidebar_state="auto",
+        initial_sidebar_state="collapsed",
     )
 
     st.markdown(
         "<style>"
-        "#MainMenu,footer,header{visibility:hidden;height:0}"
+        "footer,header{visibility:hidden;height:0}"
         ".block-container{padding-top:.5rem!important;max-width:100%!important}"
         "iframe{border:none!important}"
+        "[data-testid='stTabs']{margin-bottom:0}"
+        "button[data-baseweb='tab']{font-size:1.1rem;padding:.6rem 1.2rem}"
         "</style>",
         unsafe_allow_html=True,
     )
 
-    keys = list(PAGES.keys())
+    tabs = st.tabs(list(PAGES.keys()))
 
-    page_key = st.sidebar.radio(
-        "수업 선택",
-        options=keys,
-        format_func=lambda k: f"{PAGES[k]['icon']} {PAGES[k]['title']}",
-    )
-
-    try:
-        html = _prepare_html(page_key)
-    except FileNotFoundError as e:
-        st.error(str(e))
-        return
-
-    components.html(html, height=1600, scrolling=True)
+    for tab, (label, filename) in zip(tabs, PAGES.items()):
+        with tab:
+            try:
+                html = _prepare_html(filename)
+                components.html(html, height=1600, scrolling=True)
+            except FileNotFoundError as e:
+                st.error(str(e))
 
 
 if __name__ == "__main__":
