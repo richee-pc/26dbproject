@@ -660,6 +660,12 @@
     </div>
     <p style="font-size:0.78rem;color:var(--text-muted);flex:1;min-width:200px">미션을 완료한 뒤 맨 아래 <strong>「선생님께 제출」</strong>에서 제출해 주세요.</p>
   </div>
+  <div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 1rem 0.4rem;background:var(--warn);border-bottom:1px solid #fde68a;flex-wrap:wrap">
+    <span id="saveStatus" style="font-size:0.78rem;color:var(--warn-text)">자동 저장 대기 중</span>
+    <button type="button" onclick="window._saveNow && window._saveNow()" style="font-size:0.75rem;padding:0.2rem 0.6rem;border:1px solid #d97706;border-radius:6px;background:#fff;cursor:pointer">💾 지금 저장</button>
+    <button type="button" onclick="window._loadSave && window._loadSave()" style="font-size:0.75rem;padding:0.2rem 0.6rem;border:1px solid #059669;border-radius:6px;background:#fff;cursor:pointer">📂 불러오기</button>
+    <button type="button" onclick="if(confirm('정말 저장 기록을 삭제할까요?')){localStorage.removeItem('cs4_save');location.reload()}" style="font-size:0.75rem;padding:0.2rem 0.6rem;border:1px solid #dc2626;border-radius:6px;background:#fff;cursor:pointer;margin-left:auto">🗑️ 초기화</button>
+  </div>
 </div>
 
 <nav class="main-nav" aria-label="단원 목차">
@@ -1780,11 +1786,13 @@
                 });
                 if (retry.parentNode) retry.parentNode.removeChild(retry);
                 feedback.textContent = '';
+                _scheduleSave();
               });
               feedback.appendChild(document.createElement('br'));
               feedback.appendChild(retry);
             }
           }
+          _scheduleSave();
           var panel = item.closest('.accordion-panel');
           if (panel && panel.id) markComplete(panel.id);
         });
@@ -2102,6 +2110,154 @@
     });
   }
 
+  /* ── localStorage 저장/불러오기 ── */
+  var SAVE_KEY = 'cs4_save';
+  var _saveTimer = null;
+
+  function _collectSave() {
+    var textareas = {};
+    document.querySelectorAll('textarea').forEach(function (ta) {
+      if (ta.id && ta.value) textareas[ta.id] = ta.value;
+    });
+    var inputs = {};
+    document.querySelectorAll('input[type="text"],input[type="number"]').forEach(function (inp) {
+      if (inp.id && inp.value !== '' && inp.value !== inp.defaultValue) inputs[inp.id] = inp.value;
+    });
+    return {
+      v: 2,
+      ts: new Date().toISOString(),
+      studentName: (document.getElementById('studentName') || {}).value || '',
+      textareas: textareas,
+      inputs: inputs,
+      progress: JSON.parse(JSON.stringify(progress)),
+      completed: JSON.parse(JSON.stringify(completed))
+    };
+  }
+
+  function _applySave(s) {
+    if (!s || s.v < 2) return false;
+    var nameEl = document.getElementById('studentName');
+    if (nameEl && s.studentName) nameEl.value = s.studentName;
+
+    Object.keys(s.textareas || {}).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = s.textareas[id];
+    });
+    Object.keys(s.inputs || {}).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = s.inputs[id];
+    });
+
+    if (s.progress) {
+      if (s.progress.quizzes) {
+        Object.keys(s.progress.quizzes).forEach(function (qid) {
+          var saved = s.progress.quizzes[qid];
+          if (!saved || !saved.answered) return;
+          progress.quizzes[qid] = saved;
+          var item = document.querySelector('[data-quiz-id="' + qid + '"]');
+          if (!item) return;
+          var answer = item.getAttribute('data-answer');
+          item.classList.add('answered');
+          item.querySelectorAll('.quiz-opt').forEach(function (b) {
+            b.disabled = true;
+            if (b.getAttribute('data-val') === answer) b.classList.add('correct');
+            else if (b.getAttribute('data-val') === saved.chosen) b.classList.add('wrong');
+          });
+          var fb = item.querySelector('.quiz-feedback');
+          if (fb) {
+            var correct = saved.chosen === answer;
+            fb.textContent = correct
+              ? '🎉 정답! 제출 미션에 반영됐어요.'
+              : '💡 틀렸어요. 위 내용을 다시 읽고 「다시 풀기」를 눌러 보세요.';
+            fb.style.color = correct ? '#166534' : '#b45309';
+            if (!correct) {
+              var retry = document.createElement('button');
+              retry.type = 'button';
+              retry.className = 'quiz-opt';
+              retry.style.marginTop = '0.5rem';
+              retry.textContent = '다시 풀기';
+              retry.addEventListener('click', function () {
+                item.classList.remove('answered');
+                delete progress.quizzes[qid];
+                updateMissionUI();
+                item.querySelectorAll('.quiz-opt').forEach(function (b) {
+                  b.disabled = false;
+                  b.classList.remove('correct', 'wrong');
+                });
+                if (retry.parentNode) retry.parentNode.removeChild(retry);
+                fb.textContent = '';
+                _scheduleSave();
+              });
+              fb.appendChild(document.createElement('br'));
+              fb.appendChild(retry);
+            }
+          }
+        });
+      }
+      if (s.progress.labs) progress.labs = s.progress.labs;
+      if (s.progress.checkpoints) progress.checkpoints = s.progress.checkpoints;
+    }
+
+    if (s.completed) {
+      Object.keys(s.completed).forEach(function (id) {
+        if (s.completed[id]) completed[id] = true;
+      });
+    }
+    return true;
+  }
+
+  function _doSave() {
+    try {
+      var data = _collectSave();
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      var el = document.getElementById('saveStatus');
+      if (el) {
+        el.textContent = '✅ 저장됨 ' + new Date().toLocaleTimeString('ko-KR');
+        el.style.color = '#059669';
+      }
+    } catch (e) { /* storage full or blocked */ }
+  }
+
+  function _scheduleSave() {
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(_doSave, 2000);
+    var el = document.getElementById('saveStatus');
+    if (el) { el.textContent = '저장 예약됨…'; el.style.color = '#b45309'; }
+  }
+
+  window._saveNow = function () { clearTimeout(_saveTimer); _doSave(); };
+
+  window._loadSave = function () {
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) { alert('저장된 데이터가 없어요.'); return; }
+      var s = JSON.parse(raw);
+      if (_applySave(s)) {
+        updateMissionUI();
+        updateProgress();
+        alert('✅ 불러오기 완료!\n저장 시각: ' + new Date(s.ts).toLocaleString('ko-KR'));
+      } else {
+        alert('저장 형식이 맞지 않아요. 초기화 후 다시 시작해 주세요.');
+      }
+    } catch (e) { alert('불러오기 실패: ' + e.message); }
+  };
+
+  function _hookAutoSave() {
+    document.querySelectorAll('textarea, input[type="text"], input[type="number"]').forEach(function (el) {
+      el.addEventListener('input', _scheduleSave);
+    });
+    var origMarkLab = markLab;
+    markLab = function () {
+      origMarkLab.apply(this, arguments);
+      _scheduleSave();
+    };
+    var origMarkComplete = markComplete;
+    markComplete = function () {
+      origMarkComplete.apply(this, arguments);
+      _scheduleSave();
+    };
+  }
+
   function boot() {
     initAccordion();
     initQuizzes();
@@ -2119,6 +2275,25 @@
     installGoogleSubmitListener();
     var subBtn = document.getElementById('btnSubmitTeacher');
     if (subBtn) subBtn.addEventListener('click', submitToTeacher);
+
+    /* 저장 데이터 자동 불러오기 */
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (_applySave(s)) {
+          updateMissionUI();
+          updateProgress();
+          var el = document.getElementById('saveStatus');
+          if (el) {
+            el.textContent = '📂 이전 기록 복원됨 (' + new Date(s.ts).toLocaleTimeString('ko-KR') + ')';
+            el.style.color = '#059669';
+          }
+        }
+      }
+    } catch (e) { /* ignore */ }
+
+    _hookAutoSave();
   }
 
   if (document.readyState === 'loading') {
