@@ -5,7 +5,6 @@
 - 컴퓨터 구조 4단원: assets/cs_4.html
 
 HTML은 iframe(components.html)으로 띄워 JS·CSS가 정상 동작합니다.
-제출 URL은 HTML 내장값을 쓰며, Streamlit Secrets의 google_submit_url 이 있으면 덮어씁니다.
 """
 from __future__ import annotations
 
@@ -19,160 +18,102 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parent
-SUBMIT_URL_PLACEHOLDER = "PASTE_WEB_APP_URL_HERE"
+ASSETS = ROOT / "assets"
 
-# HTML에 넣은 URL과 동일하게 유지 (Secrets 없을 때 사용)
 DEFAULT_GOOGLE_SUBMIT_URL = (
     "https://script.google.com/macros/s/"
     "AKfycbzCS5Hdod0HNkDC4UWLN9glCu2FlvndpfQm-c94ozfWGgaiIYy2wrfSW1UGJCJJfMRufQ/exec"
 )
 
-PAGES: dict[str, dict] = {
+PAGES = {
     "dbproject": {
         "title": "자료구조 프로젝트",
         "subtitle": "수행평가 헬프데스크",
         "icon": "📦",
-        "paths": [
-            ROOT / "assets" / "dbproject.html",
-            ROOT / "dbproject.html",
-        ],
+        "file": "dbproject.html",
     },
     "cs4": {
         "title": "컴퓨터 구조 4단원",
         "subtitle": "메모리 탐험대",
         "icon": "🧠",
-        "paths": [
-            ROOT / "assets" / "cs_4.html",
-        ],
+        "file": "cs_4.html",
     },
 }
 
-IFRAME_RESIZE_SNIPPET = """
+RESIZE_JS = """
 <script>
-(function () {
-  function postHeight() {
-    var h = Math.max(
-      document.body ? document.body.scrollHeight : 0,
-      document.documentElement ? document.documentElement.scrollHeight : 0,
-      document.body ? document.body.offsetHeight : 0,
-      document.documentElement ? document.documentElement.offsetHeight : 0
-    );
-    window.parent.postMessage({ type: "streamlit:setFrameHeight", height: h + 24 }, "*");
+(function(){
+  function h(){
+    var d=Math.max(
+      document.body?document.body.scrollHeight:0,
+      document.documentElement?document.documentElement.scrollHeight:0,
+      document.body?document.body.offsetHeight:0,
+      document.documentElement?document.documentElement.offsetHeight:0);
+    window.parent.postMessage({type:"streamlit:setFrameHeight",height:d+32},"*");
   }
-  function schedule() { requestAnimationFrame(postHeight); }
-  window.addEventListener("load", schedule);
-  window.addEventListener("resize", schedule);
-  if (typeof MutationObserver !== "undefined") {
-    new MutationObserver(schedule).observe(document.documentElement, {
-      childList: true, subtree: true, attributes: true, characterData: true
-    });
-  }
-  setInterval(schedule, 800);
+  function s(){requestAnimationFrame(h)}
+  window.addEventListener("load",s);
+  window.addEventListener("resize",s);
+  if(typeof MutationObserver!=="undefined")
+    new MutationObserver(s).observe(document.documentElement,
+      {childList:true,subtree:true,attributes:true,characterData:true});
+  setInterval(s,800);
 })();
 </script>
 """
 
-GOOGLE_SUBMIT_URL_RE = re.compile(
-    r"var GOOGLE_SUBMIT_URL = '(https://script\.google\.com/macros/s/[^']+)'"
+_IMG_RE = re.compile(r'(<img\s[^>]*?)src="(images/[^"]+)"', re.I)
+_SUBMIT_RE = re.compile(
+    r"var GOOGLE_SUBMIT_URL\s*=\s*'(https://script\.google\.com/macros/s/[^']+)'"
 )
 
 
-def google_submit_url() -> str:
+def _get_submit_url() -> str:
     try:
         url = st.secrets.get("google_submit_url", "").strip()
         if url:
             return url
-    except (AttributeError, KeyError, TypeError):
+    except Exception:
         pass
-    env = os.environ.get("GOOGLE_SUBMIT_URL", "").strip()
-    if env:
-        return env
-    return DEFAULT_GOOGLE_SUBMIT_URL
+    return os.environ.get("GOOGLE_SUBMIT_URL", "").strip() or DEFAULT_GOOGLE_SUBMIT_URL
 
 
-def inject_submit_url(html: str, url: str) -> str:
-    if not url:
-        return html
-    if SUBMIT_URL_PLACEHOLDER in html:
-        html = html.replace(f"'{SUBMIT_URL_PLACEHOLDER}'", f"'{url}'", 1)
-    html, n = GOOGLE_SUBMIT_URL_RE.subn(
-        f"var GOOGLE_SUBMIT_URL = '{url}'",
-        html,
-        count=1,
-    )
-    return html
-
-
-IMG_SRC_RE = re.compile(r'<img\s([^>]*?)src="(images/[^"]+)"', re.IGNORECASE)
-
-
-def _to_data_uri(html_dir: Path, html: str) -> str:
-    """HTML 내 상대 경로 이미지를 base64 data URI로 치환 (iframe용)."""
-    def _replace(m: re.Match) -> str:
-        prefix = m.group(1)
-        rel = m.group(2)
+def _embed_images(html: str, html_dir: Path) -> str:
+    """상대 경로 이미지를 base64 data URI로 치환."""
+    def _repl(m: re.Match) -> str:
+        prefix, rel = m.group(1), m.group(2)
         img_path = html_dir / rel
         if not img_path.is_file():
             return m.group(0)
-        mime = mimetypes.guess_type(str(img_path))[0] or "image/png"
-        b64 = base64.b64encode(img_path.read_bytes()).decode("ascii")
-        return f'<img {prefix}src="data:{mime};base64,{b64}"'
-    return IMG_SRC_RE.sub(_replace, html)
+        mime = mimetypes.guess_type(img_path.name)[0] or "image/png"
+        b64 = base64.b64encode(img_path.read_bytes()).decode()
+        return f'{prefix}src="data:{mime};base64,{b64}"'
+    return _IMG_RE.sub(_repl, html)
 
 
-def read_page_html(paths: list[Path]) -> tuple[str, Path]:
-    for path in paths:
-        if path.is_file():
-            return path.read_text(encoding="utf-8"), path.parent
-    names = ", ".join(str(p.relative_to(ROOT)) for p in paths)
-    raise FileNotFoundError(f"HTML 파일을 찾을 수 없습니다: {names}")
+def _inject_submit_url(html: str, url: str) -> str:
+    if "PASTE_WEB_APP_URL_HERE" in html:
+        html = html.replace("'PASTE_WEB_APP_URL_HERE'", f"'{url}'", 1)
+    html = _SUBMIT_RE.sub(f"var GOOGLE_SUBMIT_URL = '{url}'", html, count=1)
+    return html
 
 
-@st.cache_data(show_spinner=False)
-def load_html(page_key: str, submit_url: str) -> str:
-    if page_key not in PAGES:
-        raise ValueError(f"알 수 없는 페이지: {page_key}")
+def _prepare_html(page_key: str) -> str:
+    info = PAGES[page_key]
+    html_path = ASSETS / info["file"]
+    if not html_path.is_file():
+        raise FileNotFoundError(f"{info['file']}을 찾을 수 없습니다.")
 
-    text, html_dir = read_page_html(PAGES[page_key]["paths"])
-    text = inject_submit_url(text, submit_url)
-    text = _to_data_uri(html_dir, text)
+    html = html_path.read_text(encoding="utf-8")
+    html = _inject_submit_url(html, _get_submit_url())
+    html = _embed_images(html, ASSETS)
 
-    if IFRAME_RESIZE_SNIPPET.strip() not in text:
-        if "</body>" in text:
-            text = text.replace("</body>", IFRAME_RESIZE_SNIPPET + "\n</body>", 1)
+    if "streamlit:setFrameHeight" not in html:
+        if "</body>" in html:
+            html = html.replace("</body>", RESIZE_JS + "</body>", 1)
         else:
-            text += IFRAME_RESIZE_SNIPPET
-    return text
-
-
-def render_html(html: str) -> None:
-    components.html(html, height=1600, scrolling=True)
-
-
-def apply_chrome_hiding() -> None:
-    st.markdown(
-        """
-        <style>
-          #MainMenu, footer, header { visibility: hidden; height: 0; }
-          .block-container { padding-top: 0.5rem !important; max-width: 100% !important; }
-          iframe { border: none !important; }
-          div[data-testid="stSegmentedControl"] { margin-bottom: 0.25rem; }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def resolve_page_key() -> str:
-    qp = st.query_params.get("page")
-    if qp in PAGES:
-        return str(qp)
-    return "dbproject"
-
-
-def page_label(key: str) -> str:
-    p = PAGES[key]
-    return f"{p['icon']} {p['title']}"
+            html += RESIZE_JS
+    return html
 
 
 def main() -> None:
@@ -183,38 +124,30 @@ def main() -> None:
         initial_sidebar_state="auto",
     )
 
-    apply_chrome_hiding()
-    submit_url = google_submit_url()
+    st.markdown(
+        "<style>"
+        "#MainMenu,footer,header{visibility:hidden;height:0}"
+        ".block-container{padding-top:.5rem!important;max-width:100%!important}"
+        "iframe{border:none!important}"
+        "</style>",
+        unsafe_allow_html=True,
+    )
 
-    default_key = resolve_page_key()
     keys = list(PAGES.keys())
-    default_index = keys.index(default_key) if default_key in keys else 0
 
-    with st.sidebar:
-        st.markdown("### 📚 수업 선택")
-        page_key = st.radio(
-            "페이지",
-            options=keys,
-            index=default_index,
-            format_func=page_label,
-            label_visibility="collapsed",
-        )
-        st.caption(PAGES[page_key]["subtitle"])
-        st.divider()
-        st.caption("시트 **「제출_통합」** · Drive **.txt** + **.json**")
-        if submit_url != DEFAULT_GOOGLE_SUBMIT_URL:
-            st.caption("제출 URL: Secrets 적용됨")
-
-    if st.query_params.get("page") != page_key:
-        st.query_params["page"] = page_key
+    page_key = st.sidebar.radio(
+        "수업 선택",
+        options=keys,
+        format_func=lambda k: f"{PAGES[k]['icon']} {PAGES[k]['title']}",
+    )
 
     try:
-        html = load_html(page_key, submit_url)
-    except (FileNotFoundError, ValueError) as e:
+        html = _prepare_html(page_key)
+    except FileNotFoundError as e:
         st.error(str(e))
-        st.stop()
+        return
 
-    render_html(html)
+    components.html(html, height=1600, scrolling=True)
 
 
 if __name__ == "__main__":
